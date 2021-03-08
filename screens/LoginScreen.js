@@ -32,7 +32,7 @@ export default class LoginScreen extends React.Component {
         return (
             // This is the overall screen view
             <KeyboardAvoidingView style={styles.container}>
-                <LinearGradient colors={['rgba(139, 59, 252, 1)', 'rgba(226,108,234,1)']} style={styles.background}>                
+                <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>                
                     <Text style={styles.header}> Log in to your account </Text>
                     
                     <View>
@@ -52,11 +52,11 @@ export default class LoginScreen extends React.Component {
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={this.register}>
-                            <Text style={{marginTop: 10, color:'white',fontSize: 13, textAlign:'center'}}>Don't have an account? <Text style={{color:'#1232ff'}}>Sign Up</Text></Text>
+                            <Text style={{marginTop: 10, color:'black',fontSize: 13, textAlign:'center'}}>Don't have an account? <Text style={{color:'#1232ff'}}>Sign Up</Text></Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={this.resetPassword}>
-                            <Text style={{marginTop: 20, color:'white',fontSize: 13, textAlign:'center'}}>Forgotten your password? <Text style={{color:'#1232ff'}}>Reset Here</Text></Text>
+                            <Text style={{marginTop: 20, color:'black',fontSize: 13, textAlign:'center'}}>Forgotten your password? <Text style={{color:'#1232ff'}}>Reset Here</Text></Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -81,10 +81,8 @@ const styles = StyleSheet.create({
     header: {
         fontWeight: "800",
         fontSize: 35,
-        color: "#FDFFF7",
-        marginBottom:50,
-        
-        
+        color: "black",
+        marginBottom:50,       
     },
 
     subheader: {
@@ -92,7 +90,7 @@ const styles = StyleSheet.create({
         fontSize: 25,
         color: "#514E5A",
         marginTop: 5,
-        color:'ivory',
+        color:'black',
         alignSelf:'center'
     },
 

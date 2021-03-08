@@ -14,7 +14,7 @@ export default class DashboardScreen extends React.Component {
     }
 
     // Loads the currently logged in user's details into the state
-    // Calls the function checkUser passing the user's uid as parameter
+    // Calls the function checkUser, passing the user's uid as parameter
     // Checks if the user has logged in before
     componentDidMount() {
         const { email, displayName, uid } = firebase.auth().currentUser;
@@ -27,14 +27,20 @@ export default class DashboardScreen extends React.Component {
     // New users will be taken to the screen to enter their diet information
     // Existing users will be taken to the App dashboard
     checkUser = (uid) => {
+        // database reference is 'Users/uid'
         let userRef = firebase.database().ref('Users/' + uid);
 
+        // Check once if the value at above reference is null/exists
         userRef.once('value', (snapshot) => {
             const data = snapshot.val()
             if(data == null){
                 this.props.navigation.navigate('NewUser');
+                console.log('new user');
+                // Null value, i.e. does not exist, thus == new user
             } else {
                 this.props.navigation.navigate('AuthHome');
+                console.log('existing user');
+                // Exists, navigate to logged in homepage
             }
         })
         
@@ -50,7 +56,7 @@ export default class DashboardScreen extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <LinearGradient colors={['rgba(139, 59, 252, 1)', 'rgba(226,108,234,1)']} style={styles.background}>
+                <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>
                 <Text> Home </Text>
                 <Text>{this.state.email}</Text>
                 <Text>{this.state.displayName}</Text>

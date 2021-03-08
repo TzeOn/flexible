@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Alert } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import * as firebase from 'firebase';
 import {LinearGradient} from 'expo-linear-gradient';
@@ -21,10 +21,34 @@ export default class NewUserScreen extends React.Component {
         this.setState({ email, displayName, uid});
     }
 
+    // Pushes form data to the firebase database 
+    submit = () => {
+        if(this.state.age == '' || this.state.weight == '' || this.state.height == '' || this.state.activityLevel == '' || this.state.gender == ''){
+            alert('Please complete the form');
+            return;
+        }
+        let userID = this.state.uid;
+        const updates = {
+            "name": this.state.displayName,
+            "email": this.state.email,
+            "age": this.state.age,
+            "weight": this.state.weight,
+            "height": this.state.height,
+            "gender": this.state.gender,
+            "activity": this.state.activityLevel
+        }       
+        //console.log(updates);
+        firebase.database().ref(`Users/`+userID).set(updates);
+        this.props.navigation.navigate('AuthHome');
+
+        
+    }
+
     render() {
+        const { navigate } = this.props.navigation;
         return (
             <KeyboardAvoidingView style={styles.container}>
-            <LinearGradient colors={['rgba(139, 59, 252, 1)', 'rgba(226,108,234,1)']} style={styles.background}>
+            <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>
             <View style={{marginHorizontal: 32}}>
 
                 <Text style={styles.header}> Weight (kg) </Text>
@@ -39,10 +63,11 @@ export default class NewUserScreen extends React.Component {
                 <Text style={styles.header}>Activity Level</Text>
                 <Picker
                 selectedValue={this.state.activityLevel}
-                style={{height: 50, width:'100%', color:'#8B3BFC'}}
+                style={{height: 50, width:200, color:'black'}}
                 onValueChange={(itemValue, itemIndex) =>
                     this.setState({activityLevel: itemValue})
                 }>
+                <Picker.Item label="Select activity level" value="" />
                 <Picker.Item label="Sedentary" value="1.2" />
                 <Picker.Item label="Lightly Active" value="1.375" />
                 <Picker.Item label="Moderately Active" value="1.55" />
@@ -53,27 +78,24 @@ export default class NewUserScreen extends React.Component {
                 <Text style={styles.header}>Gender</Text>
                 <Picker
                 selectedValue={this.state.gender}
-                style={{height: 50, width: '100%', color:'#8B3BFC'}}
+                style={{height: 50, width: 200, color:'black'}}
                 onValueChange={(itemValue, itemIndex) =>
                     this.setState({gender: itemValue})
-                }>
-                <Picker.Item label="Male" value="male" />
-                <Picker.Item label="Female" value="female" />
+                }> 
+                <Picker.Item label="Select gender" value="" />
+                <Picker.Item label="Male" value="Male" />
+                <Picker.Item label="Female" value="Female" />
                 </Picker>
 
                 <View style={{alignItems:'center'}}>
-                    <TouchableOpacity onPress={this.registerUser} style={styles.button}>
+                    <TouchableOpacity onPress={this.submit} style={styles.button}>
                         <Text style={{color:'black', textAlign:'center', fontWeight:'bold', fontSize:20}}> Proceed </Text>
+                        
                     </TouchableOpacity>
                 </View>
             </View>
             </LinearGradient>
-
-            
-            
-            
-
-        </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
         );
     }
 }

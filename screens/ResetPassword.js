@@ -24,7 +24,7 @@ export default class ResetPassword extends React.Component {
     render() {
         return(
             <KeyboardAvoidingView style={styles.container}>
-                <LinearGradient colors={['rgba(139, 59, 252, 1)', 'rgba(226,108,234,1)']} style={styles.background}>
+                <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>
                     <View style={{marginHorizontal:32}}>
                         <Text style={styles.title}>Reset Password</Text>
                         <Text style={styles.header}>Enter Email</Text>
