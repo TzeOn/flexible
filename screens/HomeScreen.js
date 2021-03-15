@@ -12,8 +12,7 @@ export default class HomeScreen extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <Text style={{fontSize:20, fontWeight:'600'}}>Loading...</Text>
-                <ActivityIndicator size='large'></ActivityIndicator>
+                <ActivityIndicator size="large" color="black" />
             </View>
         )
     }

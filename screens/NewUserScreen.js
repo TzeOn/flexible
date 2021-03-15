@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Alert, ScrollView, StatusBar } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import * as firebase from 'firebase';
 import {LinearGradient} from 'expo-linear-gradient';
@@ -13,7 +13,8 @@ export default class NewUserScreen extends React.Component {
         height:"",
         gender:"",
         age:"",
-        activityLevel:""
+        activityLevel:"",
+        goalWeight:""
     }
 
     componentDidMount() {
@@ -23,10 +24,25 @@ export default class NewUserScreen extends React.Component {
 
     // Pushes form data to the firebase database 
     submit = () => {
-        if(this.state.age == '' || this.state.weight == '' || this.state.height == '' || this.state.activityLevel == '' || this.state.gender == ''){
-            alert('Please complete the form');
+        if(this.state.age == '' || this.state.weight == '' || this.state.height == '' || this.state.activityLevel == '' || this.state.gender == '' || this.state.goalWeight == ''){
+            Alert.alert('Please complete the form');
             return;
         }
+        var total = this.calculateTDEE();
+        var w = parseInt(this.state.weight, 10);
+        var gw = parseInt(this.state.goalWeight, 10);
+
+        if(gw < w){
+            var defaultGoal = total - 300;
+        } if(gw == w){
+            var defaultGoal = total;
+        }else {
+            var defaultGoal = total + 300;
+        }
+
+        var defaultGoal = total - 300;
+        var week = defaultGoal * 7;
+
         let userID = this.state.uid;
         const updates = {
             "name": this.state.displayName,
@@ -35,22 +51,44 @@ export default class NewUserScreen extends React.Component {
             "weight": this.state.weight,
             "height": this.state.height,
             "gender": this.state.gender,
-            "activity": this.state.activityLevel
+            "activity": this.state.activityLevel,
+            "goalWeight": this.state.goalWeight,
+            "TDEE": Math.round(total),
+            "dailyGoal": Math.round(defaultGoal),
+            "weeklyGoal": Math.round(week),
         }       
         //console.log(updates);
         firebase.database().ref(`Users/`+userID).set(updates);
-        this.props.navigation.navigate('AuthHome');
-
-        
+        this.props.navigation.navigate('CalorieScreen');      
     }
 
+    calculateTDEE = () => {
+        var w = parseInt(this.state.weight, 10);
+        var h = parseInt(this.state.height, 10);
+        var a = parseInt(this.state.age, 10);
+        var aL = parseInt(this.state.activityLevel, 10);
+
+        if(this.state.gender == 'Male'){
+            var bmr = (w * 10) + (h * 6.25) - (a * 5) + 5
+        } if(this.state.gender == 'Female'){
+            var bmr = (w * 10) + (h * 6.25) - (a * 5) - 161
+        }
+
+        return bmr * aL;
+    }
+
+    signOut = () => {
+        firebase.auth().signOut();
+    };
+
     render() {
-        const { navigate } = this.props.navigation;
         return (
             <KeyboardAvoidingView style={styles.container}>
             <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>
             <View style={{marginHorizontal: 32}}>
+                <ScrollView showsVerticalScrollIndicator={false}>
 
+                <Text style={{fontSize:30, textAlign:'center', fontWeight:'bold', paddingBottom:20}}>Enter Fitness Details</Text>
                 <Text style={styles.header}> Weight (kg) </Text>
                 <TextInput style={styles.input} placeholder="Weight" onChangeText={weight => this.setState({weight})} value={this.state.weight}></TextInput>
 
@@ -87,12 +125,20 @@ export default class NewUserScreen extends React.Component {
                 <Picker.Item label="Female" value="Female" />
                 </Picker>
 
+                <Text style={styles.header}> Goal Weight </Text>
+                <TextInput style={styles.input} placeholder="Goal Weight" onChangeText={goalWeight => this.setState({goalWeight})} value={this.state.goalWeight}></TextInput>
+
                 <View style={{alignItems:'center'}}>
                     <TouchableOpacity onPress={this.submit} style={styles.button}>
                         <Text style={{color:'black', textAlign:'center', fontWeight:'bold', fontSize:20}}> Proceed </Text>
                         
                     </TouchableOpacity>
+                    <TouchableOpacity onPress={this.signOut} style={styles.button}>
+                        <Text style={{color:'red', textAlign:'center', fontWeight:'bold', fontSize:20}}> Log Out </Text>
+                        
+                    </TouchableOpacity>
                 </View>
+                </ScrollView>
             </View>
             </LinearGradient>
             </KeyboardAvoidingView>
@@ -106,23 +152,24 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         //backgroundColor:'#B23AFC'
+        
     },
     header: {
         fontWeight: "800",
         fontSize: 25,
         color: "#514E5A",
         marginTop: 5,
-        color:'white',
+        color:'black',
         
     },
     input: {
         marginTop: 3,
         height: 50,
         borderWidth: StyleSheet.hairlineWidth,
-        borderColor: '#BAB7C3',
+        borderColor: 'black',
         borderRadius:30,
         paddingHorizontal: 16,
-        color: '#fff'
+        color: '#000'
     },
     circle: {
         width: 500,
@@ -139,7 +186,8 @@ const styles = StyleSheet.create({
         flex:1,
         justifyContent:'center',
         alignItems:'center',
-        width: '100%'
+        width: '100%',
+        paddingTop: StatusBar.currentHeight,
     },
     button: {
         marginHorizontal:30,

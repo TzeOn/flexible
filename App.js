@@ -2,7 +2,6 @@ import {createAppContainer, createSwitchNavigator} from 'react-navigation';
 import {createStackNavigator} from 'react-navigation-stack';
 import { createBottomTabNavigator, BottomTabBar, tabBarComponent } from 'react-navigation-tabs';
 import * as React from 'react';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import LoginScreen from './screens/LoginScreen.js';
@@ -13,14 +12,11 @@ import { firebaseConfig } from './config.js';
 import HomeScreen from './screens/HomeScreen.js';
 import ResetPassword from './screens/ResetPassword.js';
 import NewUserScreen from './screens/NewUserScreen.js';
-import AuthHomeScreen from './screens/AuthHomeScreen.js';
+import CalorieScreen from './screens/CalorieScreen.js';
 import ExerciseScreen from './screens/ExerciseScreen.js';
 import FoodLogScreen from './screens/FoodLogScreen.js';
 import ProfileScreen from './screens/ProfileScreen.js';
 import RecipeScreen from './screens/RecipeScreen.js';
-import { LogBox } from 'react-native';
-
-LogBox.ignoreLogs(['Setting a timer']);
 
 //firebase.initializeApp(firebaseConfig);
 if(!firebase.apps.length){
@@ -32,7 +28,7 @@ var database = firebase.database();
 
 const TabNavigator = createBottomTabNavigator({
   Auth: {
-    screen: AuthHomeScreen,
+    screen: CalorieScreen,
     navigationOptions: {
       tabBarLabel: 'Home',
       tabBarIcon: ({ color, size }) => (
@@ -79,18 +75,6 @@ const TabNavigator = createBottomTabNavigator({
   },
   {
     initialRouteName: 'Auth',
-    // tabBarComponent: (props) => (
-    //   <TabBarComponent {...props} style={{ borderTopColor: 'black', borderColor:'black' }} />
-    // ),
-    // tabBarOptions: {
-    //   activeTintColor: '#11ECC1',
-    //   labelStyle: {
-    //     fontSize: 16,
-    //   },
-    //   style: {
-        
-    //   }
-    // }
   }
 )
 
@@ -112,7 +96,6 @@ const AuthNavigator = createStackNavigator(
   {
     Dashboard: DashboardScreen,
     NewUser: NewUserScreen,
-    AuthHome: AuthHomeScreen,
   },
   {
     headerMode: 'none'
@@ -127,7 +110,7 @@ export default createAppContainer(
     {
       Home: HomeScreen,
       App: AppNavigator,
-      //Auth: AuthNavigator,
+      Auth: AuthNavigator,
       Tabs: TabNavigator,
     },
     {

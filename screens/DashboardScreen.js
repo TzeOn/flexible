@@ -20,7 +20,6 @@ export default class DashboardScreen extends React.Component {
         const { email, displayName, uid } = firebase.auth().currentUser;
         this.setState({ email, displayName, uid});
         this.checkUser(uid);
-        console.log();
     }
 
     // Searches the database for the current user's ID to check if they are new users
@@ -38,7 +37,7 @@ export default class DashboardScreen extends React.Component {
                 console.log('new user');
                 // Null value, i.e. does not exist, thus == new user
             } else {
-                this.props.navigation.navigate('AuthHome');
+                this.props.navigation.navigate('Tabs');
                 console.log('existing user');
                 // Exists, navigate to logged in homepage
             }
