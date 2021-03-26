@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import * as firebase from 'firebase';
 import {LinearGradient} from 'expo-linear-gradient';
 
@@ -56,12 +56,7 @@ export default class DashboardScreen extends React.Component {
         return (
             <View style={styles.container}>
                 <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>
-                <Text> Home </Text>
-                <Text>{this.state.email}</Text>
-                <Text>{this.state.displayName}</Text>
-                <Text>{this.state.uid}</Text>
-
-                <TouchableOpacity style={styles.button} onPress={this.signOut}><Text style={{color:'black', fontSize: 20}}>Sign Out</Text></TouchableOpacity>
+                    <ActivityIndicator size='large'/>
                 </LinearGradient>
             </View>
         );

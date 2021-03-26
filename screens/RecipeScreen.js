@@ -11,8 +11,11 @@ export default class RecipeScreen extends React.Component {
         email: "",
         displayName: "",
         uid: "",
-        calories:"",
-        foodList:[]
+        calories:0,
+        foodList:[],
+        foodName:"",
+        foodWeight:0,
+        foodProtein:0
     }
 
     componentDidMount() {
@@ -36,7 +39,7 @@ export default class RecipeScreen extends React.Component {
                 'x-remote-user':'0'
             },
             body: JSON.stringify({
-                "query":"apple",
+                "query":"chicken breast",
                 "num_servings":1
             })
         };
@@ -44,9 +47,21 @@ export default class RecipeScreen extends React.Component {
         fetch('https://trackapi.nutritionix.com/v2/natural/nutrients', requestOptions)
             .then(response => response.json())
             .then((data) => {
-                this.setState({calories:data.foods[0].food_name})
-                console.log(data.foods)
-                console.log(this.state.calories)              
+                this.setState({foodName:data.foods[0].food_name})
+                this.setState({calories:data.foods[0].nf_calories})
+                this.setState({foodWeight:data.foods[0].serving_weight_grams})
+
+                let servingWeight = data.foods[0].serving_weight_grams
+                let gramCalorie = this.state.calories / servingWeight
+                let hundred = gramCalorie*100
+
+                let foodProtein = Math.round((data.foods[0].nf_protein / servingWeight) * 100)
+                //console.log(data.foods[0])
+                console.log(this.state.foodName)
+                console.log(this.state.calories)
+                console.log(this.state.foodWeight)     
+                console.log("100 grams of " + this.state.foodName + " is: " + hundred + " calories")  
+                console.log("100 grams of " + this.state.foodName + " is: " + foodProtein + " protein")         
             })
             .catch((error) => {
                 console.log(error);
@@ -62,7 +77,7 @@ export default class RecipeScreen extends React.Component {
             <View style={styles.container}>
                 <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>
                 <Text>{this.state.calories}Testing</Text>
-                <TouchableOpacity onPress={this.findFood} style={styles.button}>
+                <TouchableOpacity onPress={() => this.findFood()} style={styles.button}>
                     <Text>Find food</Text>
                 </TouchableOpacity>
                 </LinearGradient>

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Alert, ScrollView, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Alert, ScrollView, StatusBar, Platform } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import * as firebase from 'firebase';
 import {LinearGradient} from 'expo-linear-gradient';
@@ -29,19 +29,6 @@ export default class NewUserScreen extends React.Component {
             return;
         }
         var total = this.calculateTDEE();
-        var w = parseInt(this.state.weight, 10);
-        var gw = parseInt(this.state.goalWeight, 10);
-
-        if(gw < w){
-            var defaultGoal = total - 300;
-        } if(gw == w){
-            var defaultGoal = total;
-        }else {
-            var defaultGoal = total + 300;
-        }
-
-        var defaultGoal = total - 300;
-        var week = defaultGoal * 7;
 
         let userID = this.state.uid;
         const updates = {
@@ -54,8 +41,6 @@ export default class NewUserScreen extends React.Component {
             "activity": this.state.activityLevel,
             "goalWeight": this.state.goalWeight,
             "TDEE": Math.round(total),
-            "dailyGoal": Math.round(defaultGoal),
-            "weeklyGoal": Math.round(week),
         }       
         //console.log(updates);
         firebase.database().ref(`Users/`+userID).set(updates);
@@ -83,7 +68,8 @@ export default class NewUserScreen extends React.Component {
 
     render() {
         return (
-            <KeyboardAvoidingView style={styles.container}>
+            
+            <KeyboardAvoidingView style={styles.container} behavior={Platform.select({android: undefined, ios: 'padding'})}>
             <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>
             <View style={{marginHorizontal: 32}}>
                 <ScrollView showsVerticalScrollIndicator={false}>

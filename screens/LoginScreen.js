@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import * as firebase from 'firebase';
 
 export default class LoginScreen extends React.Component {
@@ -31,7 +31,7 @@ export default class LoginScreen extends React.Component {
     render() {
         return (
             // This is the overall screen view
-            <KeyboardAvoidingView style={styles.container}>
+            <KeyboardAvoidingView style={styles.container} behavior={Platform.select({android: undefined, ios: 'padding'})}>
                 <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>                
                     <Text style={styles.header}> Log in to your account </Text>
                     

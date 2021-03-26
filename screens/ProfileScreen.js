@@ -84,19 +84,36 @@ export default class ProfileScreen extends React.Component {
             alert('Please complete the form');
             return;
         }
+        let total = this.calculateTDEE();
         let userID = this.state.uid;
         const updates = {
             "age": this.state.age,
             "weight": this.state.weight,
             "height": this.state.height,
             "gender": this.state.gender,
-            "activity": this.state.activityLevel
+            "activity": this.state.activityLevel,
+            "TDEE": total,
         }       
 
-        firebase.database().ref(`Users/`+userID).set(updates);
+        firebase.database().ref(`Users/`+userID).update(updates);
         Alert.alert("Changes successful");
     }
     
+    calculateTDEE = () => {
+        var w = parseInt(this.state.weight, 10);
+        var h = parseInt(this.state.height, 10);
+        var a = parseInt(this.state.age, 10);
+        var aL = parseInt(this.state.activityLevel, 10);
+
+        if(this.state.gender == 'Male'){
+            var bmr = (w * 10) + (h * 6.25) - (a * 5) + 5
+        } if(this.state.gender == 'Female'){
+            var bmr = (w * 10) + (h * 6.25) - (a * 5) - 161
+        }
+
+        return bmr * aL;
+    }
+
     // UI render
     render() {
         const { modalVisible } = this.state;
