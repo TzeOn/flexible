@@ -26,6 +26,7 @@ if(!firebase.apps.length){
 }
 var database = firebase.database();
 
+
 const TabNavigator = createBottomTabNavigator({
   Auth: {
     screen: CalorieScreen,
@@ -35,16 +36,7 @@ const TabNavigator = createBottomTabNavigator({
         <MaterialCommunityIcons name="home" color={'black'} size={30} />
       )
     },
-  },
-  Profile: {
-    screen: ProfileScreen,
-    navigationOptions: {
-      tabBarLabel: 'Profile',
-      tabBarIcon: ({ color, size }) => (
-        <MaterialCommunityIcons name="account" color={'black'} size={30} />
-      )
-    },
-  },
+  }, 
   FoodLog: {
     screen: FoodLogScreen,
     navigationOptions: {
@@ -71,7 +63,16 @@ const TabNavigator = createBottomTabNavigator({
         <MaterialCommunityIcons name="dumbbell" color={'black'} size={30} />
       )
     },  
-  }, 
+  },
+  Profile: {
+    screen: ProfileScreen,
+    navigationOptions: {
+      tabBarLabel: 'Profile',
+      tabBarIcon: ({ color, size }) => (
+        <MaterialCommunityIcons name="account" color={'black'} size={30} />
+      )
+    },
+  },
   },
   {
     initialRouteName: 'Auth',

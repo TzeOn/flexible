@@ -3,8 +3,9 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, StatusBar, 
 import * as firebase from 'firebase';
 import {LinearGradient} from 'expo-linear-gradient';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import {withNavigation} from 'react-navigation';
 
-const cardHeight = Dimensions.get('window').height * 0.15;
+const cardHeight = Dimensions.get('window').height * 0.10;
 const cardWidth = Dimensions.get('window').width * 0.95;
 const modalHeight = Dimensions.get('window').height * 0.85;
 
@@ -31,6 +32,7 @@ export default class CalorieScreen extends React.Component {
         goalWeight:0,
         modalVisible:false,
         reset:false,
+        refresh:false
 
     }
 
@@ -38,9 +40,8 @@ export default class CalorieScreen extends React.Component {
         const { email, displayName, uid } = firebase.auth().currentUser;
         this.setState({ email, displayName, uid});
         var newDay = new Date().getDay();
-        
+        const {navigation} = this.props;
 
-        var fff = this.getFill()
         // Listens to the database and retrieves required values, then appends these values to the corresponding state
         // Data is returned as a snapshot, all child nodes of 'Users/uid' are returned
         // child nodes are filtered using if statements where the states are set using the value of each child snapshot
@@ -73,10 +74,13 @@ export default class CalorieScreen extends React.Component {
         }); 
         
         var weeklyCaloriesRef = firebase.database().ref('Users/' + uid + '/week/');
-        await weeklyCaloriesRef.once('value', (snapshot) => {
+        await weeklyCaloriesRef.on('value', (snapshot) => {
             var weekTotal=0;
-         
+
             snapshot.forEach((day) => {
+                if(day.key == 'reset'){
+                    this.setState({reset:day.val()})
+                }
                 day.forEach((entry) => {
                     entry.forEach((item) => {
                         if(item.key == 'calories'){
@@ -92,6 +96,7 @@ export default class CalorieScreen extends React.Component {
         await dailyRef.once('value', (snapshot) => {
             var dailyTotal=0;
             var dailyProtein=0;
+            
             snapshot.forEach((entry) => {
                 entry.forEach((item) => {
                     if(item.key == 'calories'){
@@ -106,27 +111,61 @@ export default class CalorieScreen extends React.Component {
             this.setState({protein: dailyProtein})
     
         })
+        this.getFill()
+
+        // Reset the food log entries at the start of the week
+        if(newDay == 0){
+            this.setState({reset:true})
+            firebase.database().ref('Users/' + uid + '/week/').update({'reset': this.state.reset})
+        }
+        // If today is Monday and reset:true, remove all week entries
+        if(newDay == 1 && this.state.reset){
+            //clear entries
+            this.setState({reset:false})
+            firebase.database().ref('Users/' + uid + '/week/').remove();
+            firebase.database().ref('Users/' + uid + '/week/').update({'reset':this.state.reset})
+            console.log("clear entries")
+        }
+
+        this.listener();
     }
+
+    listener = () => {
+        this.props.navigation.addListener('didFocus', () => {
+            var total=0;
+            var userID = this.state.uid;
+            var day = new Date().getDay();
+
+            firebase.database().ref('Users/' + userID + '/week/' + day).once('value', (snapshot)=>{
+                snapshot.forEach((entry)=>{
+                    entry.forEach((item)=>{
+                        if(item.key == 'calories'){
+                            total += item.val()
+                        }
+                    })
+                })
+                this.setState({calories: total})
+            })
+        })
+    }
+
 
     // Change visibility of modal
     setModalVisible = (visible) => {
         this.setState({ modalVisible: visible });
     }
 
-    signOut = () => {
-        firebase.auth().signOut();
-    };
-
     getFill = () => {
         var cal = parseInt(this.state.calories, 10);
         var max = parseInt(this.getDailyGoal(), 10);
         let res = (cal/max) * 100;
- 
+  
         // only setState if real number, and state is currently empty
         // Will only set the state once when the page renders
-        if(res.toString() != 'NaN' && this.state.fill == ""){
+        if(res.toString() != 'NaN' && this.state.fill == 0){
             this.setState({fill: res});
         }
+        
     };
 
     getRemainingDay = () => {
@@ -171,8 +210,8 @@ export default class CalorieScreen extends React.Component {
     };
 
     getDeficitDifference = () => {
-        var totalTDEE = parseInt(this.state.TDEE, 10) * 7;
-        var totalWeek = parseInt(this.getWeeklyGoal(), 10);
+        var totalTDEE = parseFloat(this.state.TDEE, 10) * 7;
+        var totalWeek = parseFloat(this.getWeeklyGoal(), 10);
 
         var deficit = totalTDEE - totalWeek;
 
@@ -185,7 +224,8 @@ export default class CalorieScreen extends React.Component {
     getLossEstimate = () => {
         var loss = 0;
         var weeks = 0;
-        var targetLoss = parseInt(this.state.weight,10) - parseInt(this.state.goalWeight,10);
+        
+        var targetLoss = parseFloat(this.state.weight,10) - parseFloat(this.state.goalWeight,10);
         while(loss < targetLoss){
             var temp = this.getDeficitDifference();
             loss = loss + temp;
@@ -236,11 +276,12 @@ export default class CalorieScreen extends React.Component {
 
 
     render() {
-       // this.getFill()
+        // this.getFill()
+        const { calories } = this.state;
         const { modalVisible } = this.state;
         return (        
-            <View style={{flex:1}}>
-                <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>
+            <View key ={this.state.calories} style={styles.container}>
+                
                 <View>
                 <Modal
                     animationType="slide"
@@ -279,83 +320,87 @@ export default class CalorieScreen extends React.Component {
                     <View style={styles.card}>
                         <Text style={styles.header}>Tracking</Text>
                     </View>
-                    <View style={{flex:1, borderBottomColor:'black', borderBottomWidth:1, paddingBottom:10}}>
+                    <View style={styles.cardContainer}>
                         <Text style={{fontSize:22, paddingBottom:15, textAlign:'center', fontWeight:'bold'}}>{this.state.date}</Text>
-                        <View style={{flexDirection:'row', flex:1, width:'100%'}}>
-                            <View style={{flexDirection:'column', flex:0.33}}>
-                                <Text style={{textAlign:'center', fontSize:20, borderBottomColor:'white', borderBottomWidth:1,}}>Goal</Text>
-                                <Text style={{textAlign:'center', fontSize:25, color:'#009b00'}}>{Math.round(this.getDailyGoal())}</Text>
+                        <View style={{flexDirection:'row', flex:1, width:cardWidth, alignContent:'center'}}>
+
+                            <View style={{flexDirection:'column', flex:0.25,}}>
+                                <Text style={{textAlign:'center', fontSize:20,}}>Goal</Text>
+                                <Text style={{textAlign:'center', fontSize:25, color:'#34C759', fontWeight:'bold'}}>{Math.round(this.getDailyGoal())}</Text>
 
                                 <Text></Text>
                                 <Text></Text>
                                 <Text></Text>
                                 
-                                <Text style={{textAlign:'center', fontSize:20, borderBottomColor:'white', borderBottomWidth:1, textAlignVertical:'bottom'}}>Weekly</Text>
-                                <Text style={{textAlign:'center', fontSize:20, textAlignVertical:'bottom', color:'#009b00'}}>{Math.round(this.getWeeklyGoal())}</Text>
+                                <Text style={{textAlign:'center', fontSize:20, textAlignVertical:'bottom'}}>Weekly</Text>
+                                <Text style={{textAlign:'center', fontSize:20, textAlignVertical:'bottom', color:'#34C759', fontWeight:'bold'}}>{Math.round(this.getWeeklyGoal())}</Text>
                             </View>
 
+                        <View style={{flex:0.5, alignSelf:'center'}}>
                         <AnimatedCircularProgress
                         size={180}
                         width={5}
+                        style={{alignSelf:'center'}}
                         fill={this.state.fill}
                         rotation={360}
-                        tintColor="#00e0ff"
-                        backgroundColor="#fff">
+                        tintColor="#007AFF"
+                        backgroundColor="gray">
                             {
                                 (fill) => (
-                                    <Text style={{textAlign:'center',color:'grey', fontSize:40}}> {this.state.calories}</Text>
+                                    <Text style={{textAlign:'center',color:'black', fontSize:40, fontWeight:'bold'}}> {calories}</Text>
                                 )
                             }
                         </AnimatedCircularProgress>
-                            <View style={{flex:1,flexDirection:'column', flex:0.33}}>
-                                <Text style={{fontSize:16, textAlign:'center', borderBottomColor:'white', borderBottomWidth:1}}>Remaining</Text>
-                                <Text style={{textAlign:'center', fontSize:25, color:'orange'}}>{this.getRemainingDay()}</Text>
+                        </View>
+                            <View style={{flexDirection:'column', flex:0.25}}>
+                                <Text style={{fontSize:16, textAlign:'center'}}>Remaining</Text>
+                                <Text style={{textAlign:'center', fontSize:25, color:'orange', fontWeight:'bold'}}>{this.getRemainingDay()}</Text>
 
                                 <Text></Text>
                                 <Text></Text>
                                 <Text></Text>
                                 
-                                <Text style={{textAlign:'center', fontSize:14, borderBottomColor:'white', borderBottomWidth:1}}>Weekly Remaining</Text>
-                                <Text style={{textAlign:'center', fontSize:20, color:'orange'}}>{this.getRemainingWeekly()}</Text>
+                                <Text style={{textAlign:'center', fontSize:14}}>Weekly Remaining</Text>
+                                <Text style={{textAlign:'center', fontSize:20, color:'orange', fontWeight:'bold'}}>{this.getRemainingWeekly()}</Text>
                             </View>
                         </View>
                     </View>
 
-                    <View style={{flexDirection:'row', width:'85%', borderBottomColor:'grey', borderBottomWidth:1, paddingBottom:15}}>
+                    <View style={{flexDirection:'row', width:cardWidth, borderBottomColor:'grey', borderWidth:1, padding:6, marginTop:10, borderRadius:10, backgroundColor:'#f6f8fa'}}>
                         <View style={{flex:0.33, flexDirection:'column'}}>
                             <Text></Text>
                             <Text style={{paddingTop:10, fontSize:20, fontWeight:'bold', textAlign:'left'}}>Protein</Text>
                         </View>         
                         <View style={{flex:0.33, flexDirection:'column'}}>
                             <Text style={{paddingTop:10, fontSize:14, fontWeight:'bold', textAlign:'center'}}>Current</Text>
-                            <Text style={{fontSize:20, fontWeight:'bold', textAlign:'center', color:'grey'}}>{this.state.protein}</Text>
+                            <Text style={{fontSize:20, fontWeight:'bold', textAlign:'center', color:'grey', fontWeight:'bold'}}>{this.state.protein}</Text>
                         </View>  
                         <View style={{flex:0.33, flexDirection:'column'}}>
                             <Text style={{paddingTop:10, fontSize:14, fontWeight:'bold', textAlign:'center'}}>Goal</Text>
-                            <Text style={{fontSize:20, fontWeight:'bold', textAlign:'center', color:'#009b00'}}>{this.getProtein()}</Text>
+                            <Text style={{fontSize:20, fontWeight:'bold', textAlign:'center', color:'#34C759', fontWeight:'bold'}}>{this.getProtein()}</Text>
                         </View>   
                         <View style={{flex:0.33, flexDirection:'column'}}>
                             <Text style={{paddingTop:10, fontSize:14, fontWeight:'bold', textAlign:'center'}}>Remaining</Text>
-                            <Text style={{fontSize:20, fontWeight:'bold', textAlign:'center', color:'orange'}}>{this.getProtein() - this.state.protein}</Text>
+                            <Text style={{fontSize:20, fontWeight:'bold', textAlign:'center', color:'orange', fontWeight:'bold'}}>{this.getProtein() - this.state.protein}</Text>
                         </View>           
                     </View>
                     
-                    <View style={{flex:1}}>
+                    <View style={{flex:1, width:cardWidth, borderBottomColor:'grey', borderWidth:1, padding:6, marginTop:10, borderRadius:10, backgroundColor:'#f6f8fa'}}>
                         <Text style={{textAlign:'center', fontSize:22, fontWeight:'bold', paddingBottom:10}}> Personal Goals </Text>
-                        <View style={{flexDirection:'row', width:'85%'}}>
+                        <View style={{flexDirection:'row', width:'85%', alignSelf:'center'}}>
                             <View style={{flex:0.33, flexDirection:'column', borderRightWidth:1}}>
                                 <Text style={{textAlign:'center', fontSize:16, borderBottomWidth:1}}>Current {'\n'}Weight</Text>
-                                <Text style={{textAlign:'center', color:'grey', fontSize:20}}>{this.state.weight}kg</Text>
+                                <Text style={{textAlign:'center', color:'grey', fontSize:20, fontWeight:'bold'}}>{this.state.weight}kg</Text>
                             </View>
 
                             <View style={{flex:0.33, flexDirection:'column', borderRightWidth:1}}>
                                 <Text style={{textAlign:'center', fontSize:16, borderBottomWidth:1}}>Goal {'\n'}Weight</Text>
-                                <Text style={{textAlign:'center', color:'#009b00', fontSize:20}}>{this.state.goalWeight}kg</Text>
+                                <Text style={{textAlign:'center', color:'#34C759', fontSize:20, fontWeight:'bold'}}>{this.state.goalWeight}kg</Text>
                             </View>
 
                             <View style={{flex:0.33, flexDirection:'column'}}>
                                 <Text style={{textAlign:'center', fontSize:16, borderBottomWidth:1}}>Weeks to goal weight</Text>
-                                <Text style={{textAlign:'center', fontSize:20}}>{this.getLossEstimate()}</Text>
+                                <Text style={{textAlign:'center', fontSize:20, fontWeight:'bold'}}>{this.getLossEstimate()}</Text>
                             </View>
 
                         </View>
@@ -363,9 +408,9 @@ export default class CalorieScreen extends React.Component {
                         <View style={{flex:1, paddingTop:20}}>
                             <Text onPress={() => this.setModalVisible(true)} style={{textAlign:'center', fontSize:10, color:'blue'}}>Edit goals</Text>
                         </View>
+                        
                     </View>
-
-                </LinearGradient>
+                
             </View>
         );
     }
@@ -404,12 +449,12 @@ const styles = StyleSheet.create({
     },
     header: {
         fontWeight: "bold",
-        fontSize: 30,
-        color: "black", 
+        fontSize: 35,
+        color: "#007AFF", 
     },
     card: {
         marginTop: StatusBar.currentHeight,
-        backgroundColor: '#f9f1f1',
+        backgroundColor: '#f6f8fa',
         borderRadius:10,
         width:cardWidth,
         marginRight:5,
@@ -449,4 +494,13 @@ const styles = StyleSheet.create({
         borderColor:'grey',
         borderWidth:1
     },
+    cardContainer: {
+        flex:1, 
+        borderBottomColor:'black', 
+        borderWidth:1,
+        paddingBottom:10, 
+        borderRadius:10, 
+        width:cardWidth, 
+        backgroundColor:'#f6f8fa'
+    }
 });

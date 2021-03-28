@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, StatusBar, Platform, Dimensions, Modal, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView, KeyboardAvoidingView, StatusBar, Platform, Dimensions, Modal, FlatList, SnapshotViewIOS } from 'react-native';
 import * as firebase from 'firebase';
 import {LinearGradient} from 'expo-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const srcWidth = Dimensions.get('window').width * 0.95;
-const modalHeight = Dimensions.get('window').height * 0.85
+const cardHeight = Dimensions.get('window').height * 0.10;
+const cardWidth = Dimensions.get('window').width * 0.95;
+const modalHeight = Dimensions.get('window').height * 0.85;
 
 export default class FoodLogScreen extends React.Component {
 
@@ -30,7 +31,8 @@ export default class FoodLogScreen extends React.Component {
         currentDay:0,
         total:0,
         totalWeek:0,
-        test:[]
+        test:[],
+        refresh:false
     }
 
     async componentDidMount() {
@@ -40,23 +42,41 @@ export default class FoodLogScreen extends React.Component {
         // Gets the current day of the week as a number 1-7
         var newDate = new Date();
         var newDay = newDate.getDay();
-        this.setState({currentDay: newDay});
+        this.setState({currentDay: newDay}); 
 
         var ref = firebase.database().ref('Users/' + uid + '/week/' + newDay);
         await ref.once('value', (snapshot) => {
+            var total=0;
             this.setState({listData:snapshot.val()})
-            // var data = []
-            // snapshot.forEach((child)=> {
-            //     this.setState({listData:child})
-                 console.log(this.state.listData)
-            // })
-
-            //this.setState({listData:data})
+            snapshot.forEach((child) => {
+                child.forEach((item) => {
+                    if(item.key == 'calories'){
+                        total += item.val();
+                    }
+                })
+            })
+            this.setState({calories:total});
         });    
-        // console.log(this.state.listData);
-         
     }
 
+    fetchList = async () => {
+        var userID = this.state.uid;
+        var day = this.state.currentDay;
+
+        var ref = firebase.database().ref('Users/' + userID + '/week/' + day);
+        await ref.once('value', (snapshot) => {
+            var total=0;
+            this.setState({listData:snapshot.val()})
+            snapshot.forEach((child) => {
+                child.forEach((item) => {
+                    if(item.key == 'calories'){
+                        total += item.val()
+                    }
+                })
+            })
+            this.setState({calories:total})
+        })
+    }
 
     setModalVisible = (visible) => {
         this.setState({modalVisible: visible});
@@ -100,9 +120,19 @@ export default class FoodLogScreen extends React.Component {
     update = () => {
         let userID = this.state.uid;
         let currentDate = this.state.currentDay;
-
-        const actualCalories = Math.round((this.state.servingCalories / this.state.servingWeight) * this.state.foodWeight)
-        const actualProtein = Math.round((this.state.servingProtein / this.state.servingWeight) * this.state.foodWeight)
+        var actualCalories=0;
+        var actualProtein=0;
+        
+        console.log(this.state.foodWeight)
+        if(this.state.foodWeight == 0){
+            actualCalories = Math.round(this.state.servingCalories)
+            actualProtein = Math.round(this.state.servingProtein)
+            this.setState({foodWeight:this.state.servingWeight})
+        } else {
+            actualCalories = Math.round((this.state.servingCalories / this.state.servingWeight) * this.state.foodWeight)
+            actualProtein = Math.round((this.state.servingProtein / this.state.servingWeight) * this.state.foodWeight)
+        }
+        
 
         const updates = {
             'food':this.state.foodName,
@@ -111,39 +141,17 @@ export default class FoodLogScreen extends React.Component {
             'amount': this.state.foodWeight
         }
         firebase.database().ref(`Users/` + userID + '/week/' + currentDate).push().update(updates);
-
-        // // Finds the total calories of the current day from each individual food post
-        // var totalDay = 0;
-        // var refDay = firebase.database().ref('Users/' + userID + '/week/' + currentDate);
-        // refDay.once('value', (snapshot) => {
-        //     snapshot.forEach((postid) => {
-        //         postid.forEach((data) => {
-        //             if(data.key == 'calories'){
-        //                 totalDay += data.val();                       
-        //             }
-        //         })
-        //     })
-        // })       
-        // // Set the total in the current day to the updated total
-        // firebase.database().ref('Users/' + userID + '/week/' + currentDate).update({'total':totalDay});
-
-        // // Finds the total calories for the week from each individual day
-        // var totalWeek = 0;
-        // var refWeek = firebase.database().ref('Users/' + userID + '/week/'); 
-        // refWeek.once('value', (snapshot) => {
-        //     snapshot.forEach((dayid) => {
-        //         if(dayid == 'total'){
-        //             totalWeek += dayid.val();
-        //         }
-        //     })
-        // })
-        // // Set the total in the week to the updated total
-        // firebase.database().ref('Users/' + userID + '/week/').update({'weekTotal': totalWeek})
+        this.setState({
+            search:"",
+            foodWeight:0
+        })
     }
 
     addFood = async () => {
         await this.findFood();
         this.update();
+        await this.fetchList();
+
     
     };
 
@@ -160,14 +168,29 @@ export default class FoodLogScreen extends React.Component {
         console.log("Test 2")
     }
 
+    deleteEntry = async (item) => {
+        var day = this.state.currentDay;
+        var userID = this.state.uid;
+        var ref = firebase.database().ref('Users/' + userID + '/week/' + day);
+        var postID;
+        
+        await ref.once('value', (snapshot) => {
+            snapshot.forEach((child) => {
+                if(child.val().food == item){
+                    postID = child.key
+                    firebase.database().ref('Users/' + userID + '/week/' + day + '/' + postID).remove();
+                }
+            })        
+        })
+        await this.fetchList();    
+    }
 
     // UI render
     render() {
         const { modalVisible } = this.state;
         return (
             <KeyboardAvoidingView style={styles.container} behavior={Platform.select({android: undefined, ios: 'padding'})}>
-                <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>
-                <View style={{flex:1}}>
+                <View style={styles.container}>
                    
                         {/* Modal  */}
                         <Modal
@@ -175,7 +198,6 @@ export default class FoodLogScreen extends React.Component {
                         transparent={true}
                         visible={modalVisible}
                         onRequestClose={() => {
-                            Alert.alert("Modal has been closed.");
                             this.setModalVisible(!modalVisible);
                         }}
                         >
@@ -192,9 +214,7 @@ export default class FoodLogScreen extends React.Component {
                                         placeholder="e.g. chicken breast" 
                                         onChangeText={search => this.setState({search})} value={this.state.search}></TextInput>                                        
                                     </View>
-                                    {/* <Text style={{paddingLeft:10}}>
-                                        <MaterialCommunityIcons name="magnify-plus-outline" color={'black'} size={30} />
-                                    </Text> */}                              
+                                                              
                                 </View>
 
                                 <View style={{flexDirection:'row', marginTop:20}}>
@@ -212,6 +232,7 @@ export default class FoodLogScreen extends React.Component {
                                         <Text style={{fontSize:25, textAlign:'center', fontWeight:'bold'}}>Add</Text>
                                     </TouchableOpacity>                        
                                 </View>
+                                <Text style={{fontSize:10, paddingTop:10}}>*if weight is 0 then standard serving size is recorded instead*</Text>
                             
                             
                             <View style={{flex:1,justifyContent:'flex-end', width:'60%', alignSelf:'center'}}>
@@ -224,12 +245,12 @@ export default class FoodLogScreen extends React.Component {
                         </Modal>
 
                         {/* Screen title section */}
-                        <View style={{borderBottomColor:'black', borderBottomWidth:1,width:srcWidth}}>
+                        <View style={styles.card}>
                             <Text style={{fontSize:40, fontWeight:'bold', color:'black', textAlign:'center', paddingBottom:10}}> Food Log </Text>
                         </View>
 
                         {/* Date section with navigation buttons */}
-                        <View style={{flexDirection:'row', paddingTop:20, borderBottomWidth:1, paddingBottom:10}}>
+                        <View style={{flexDirection:'row', width:cardWidth, borderWidth:1, padding:6, marginTop:10, borderRadius:10, backgroundColor:'#f6f8fa'}}>
                             <TouchableOpacity style={{flex:.2}}>
                                 <Text style={{textAlign:'right'}}>
                                 <MaterialCommunityIcons name="arrow-left-bold" color={'black'} size={30} />
@@ -244,13 +265,27 @@ export default class FoodLogScreen extends React.Component {
                                 </Text> 
                             </TouchableOpacity>
                         </View>
+                                    
+                        <View style={{flex:1, width:cardWidth,marginTop:10}}>
+                            {this.state.listData == null && (                              
+                                <Text style={{textAlign:'center', textAlignVertical:'center', fontSize:30, color:'#007AFF'}}>No meals recorded yet</Text>                            
+                            )}
 
-                        <View style={{flex:1}}>
-                            <FlatList 
+                            {this.state.listData != null && (
+                                <FlatList 
                                 data={Object.keys(this.state.listData)}
+                                extraData={Object.keys(this.state.listData)}
                                 renderItem={( {item }) => (
-                                    <View style={{flex:1, borderWidth:1, marginTop:10, marginBottom:10, borderRadius:5, padding:6 }} elevation={1}>
-                                    <Text style={{fontSize:22,fontWeight:'bold', textAlign:'center'}}>{this.state.listData[item].food}</Text>
+                                    <View style={{flex:1, borderWidth:1, marginBottom:10, borderRadius:5, padding:6, backgroundColor:'#f6f8fa' }}>
+                                    <View style={{flexDirection:'row'}}>
+                                    <Text style={{flex:.9, fontSize:22,fontWeight:'bold', textAlign:'center'}}>{this.state.listData[item].food}</Text>
+                                    <TouchableOpacity style={{flex:0.1, paddingTop:5}}
+                                        onPress={() => this.deleteEntry(this.state.listData[item].food)}>
+                                        <Text style={{textAlign:'right'}}>
+                                        <MaterialCommunityIcons name="delete" color={'red'} size={20} />
+                                        </Text>
+                                    </TouchableOpacity>
+                                    </View>
                                     <View style={{flex:1, flexDirection:'row'}}>
                                         <View style={{flex:0.33}}>
                                          <Text style={{fontSize:20, flex:1, textAlign:'center'}}>Weight:</Text>
@@ -268,18 +303,14 @@ export default class FoodLogScreen extends React.Component {
                                     </View>
                                     </View>
                                 )}  
-                                keyExtracter={(index) => index.toString()} 
-                               
-                                                     
+                                
+                                keyExtracter={({item, index}) => index.toString()}  
+                                                      
                             />
-
-
+                            )}
                         </View>
-                        
-                   
-                        
                     
-                    <View style={{flex:1, justifyContent:'flex-end', alignContent:'center'}}>
+                    <View style={{flex:0.1, justifyContent:'flex-end', alignContent:'center'}}>
                         <TouchableOpacity>
                             <Text style={{fontSize:50, textAlign:'center'}} onPress={() => this.setModalVisible(true)}>
                                 <MaterialCommunityIcons name="plus-circle" color={'black'} size={60} />
@@ -287,7 +318,6 @@ export default class FoodLogScreen extends React.Component {
                         </TouchableOpacity>
                     </View>
                 </View>
-                </LinearGradient>
             </KeyboardAvoidingView>
         );
     }
@@ -337,4 +367,19 @@ const styles = StyleSheet.create({
         elevation: 5,
         height: modalHeight,
       },
+      card: {
+        marginTop: StatusBar.currentHeight,
+        backgroundColor: '#f6f8fa',
+        borderRadius:10,
+        width:cardWidth,
+        marginRight:5,
+        marginLeft:5,
+        // flex:1,
+        height:cardHeight,
+        justifyContent:'center',
+        alignItems:'center',
+        marginBottom:5,
+        borderWidth:1,
+        borderColor:'grey'       
+    },
 });

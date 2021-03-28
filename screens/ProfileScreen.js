@@ -118,7 +118,7 @@ export default class ProfileScreen extends React.Component {
     render() {
         const { modalVisible } = this.state;
         return (           
-            <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>
+            <View style={styles.container}>
                 <ScrollView>
                     <View style={{flex:1}}>
 
@@ -133,7 +133,7 @@ export default class ProfileScreen extends React.Component {
                         this.setModalVisible(!modalVisible);
                     }}
                     >
-                    <View>
+                    <View style={{flex:1}}>
                         <View style={styles.modalView}>                      
                         <View style={{marginHorizontal: 32}}>
 
@@ -191,11 +191,12 @@ export default class ProfileScreen extends React.Component {
                     Start of Profile screen without the Modal
                     Displays User details
                     */}
-                    <View elevation={6} style={styles.card}>
+                    <View elevation={3} style={styles.card}>
                         <Text style={styles.header}> {this.state.displayName} </Text>
                     </View>
+                    <View style={styles.cardContainer}>
                     <View style={{flex:1}}>
-                        <Text style={{fontSize:30, borderColor:'white', borderBottomWidth:4, borderTopWidth:4, paddingLeft:20}}>Account Details</Text>
+                        <Text style={{fontSize:30, paddingLeft:20}}>Account Details</Text>
                     </View>
                     <View style={styles.rowView}> 
                         <Text style={styles.row1}>Name</Text>
@@ -205,7 +206,10 @@ export default class ProfileScreen extends React.Component {
                         <Text style={styles.row1}>Email</Text>
                         <Text style={styles.row2}>{this.state.email}</Text>
                     </View>
-                    <View style={{flexDirection:'row', flex:1, borderColor:'white', borderBottomWidth:4, borderTopWidth:4, }}>
+                    </View>
+
+                    <View style={styles.cardContainer}>
+                    <View style={{flexDirection:'row', flex:1 }}>
                         <Text style={{flex:.9, fontSize:30, paddingLeft:20, alignSelf:'flex-start'}}>Personal Details</Text>
                         <TouchableOpacity style={{alignSelf:'center', flex:0.1, }}>
                             <Text onPress={() => this.setModalVisible(true)} style={{color:'blue'}}>Edit</Text>
@@ -231,15 +235,16 @@ export default class ProfileScreen extends React.Component {
                         <Text style={styles.row1}>Activity</Text>
                         <Text style={styles.row2}>{this.state.activityLevel}</Text>
                     </View>
+                    </View>
 
                     <View style={{paddingTop:100}}>
                         <TouchableOpacity style={styles.button} onPress={this.confirm}>
-                            <Text style={{color:'black', fontSize: 20, alignSelf:'center', textAlign:'center'}}>Sign Out</Text>
+                            <Text style={{color:'white', fontSize: 20, alignSelf:'center', textAlign:'center', fontWeight:'bold'}}>Sign Out</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
                 </ScrollView>
-            </LinearGradient>
+            </View>
         );
     }
 }
@@ -261,7 +266,7 @@ const styles = StyleSheet.create({
     },
     button: {
         marginHorizontal:30,
-        backgroundColor: '#f9f1f1',
+        backgroundColor: '#007AFF',
         borderRadius:20,
         height: 52,
         width: '80%',
@@ -273,8 +278,8 @@ const styles = StyleSheet.create({
     },
     header: {
         fontWeight: "bold",
-        fontSize: 30,
-        color: "black", 
+        fontSize: 35,
+        color: "#007AFF", 
     },
     subheader: {
         fontWeight: "800",
@@ -300,7 +305,7 @@ const styles = StyleSheet.create({
     },
     card: {
         marginTop: StatusBar.currentHeight,
-        backgroundColor: '#f9f1f1',
+        backgroundColor: '#f6f8fa',
         borderRadius:10,
         width:cardWidth,
         marginRight:5,
@@ -321,7 +326,8 @@ const styles = StyleSheet.create({
         fontSize:20, 
         alignSelf:'flex-start', 
         flex:.3,
-        marginBottom:5
+        marginBottom:5,
+        paddingLeft:5
     },
     row2: {
         fontSize:20,
@@ -360,5 +366,16 @@ const styles = StyleSheet.create({
     },
     right: {
         right:10
+    },
+    cardContainer: {
+        flex:1, 
+        borderBottomColor:'black', 
+        borderWidth:1,
+        paddingBottom:10, 
+        borderRadius:10, 
+        width:cardWidth, 
+        backgroundColor:'#f6f8fa',
+        alignSelf:'center',
+        marginTop:10
     }
 });
