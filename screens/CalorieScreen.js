@@ -21,8 +21,8 @@ export default class CalorieScreen extends React.Component {
         activityLevel:0,
         date: new Date().toDateString(),
         calories:0,
-        dailyGoal:'',
-        weeklyGoal:"",
+        dailyGoal:0,
+        weeklyGoal:0,
         weeklyCalories:"",
         protein:"",
         fill:0,
@@ -32,7 +32,8 @@ export default class CalorieScreen extends React.Component {
         goalWeight:0,
         modalVisible:false,
         reset:false,
-        refresh:false
+        refresh:false,
+        change:false,
 
     }
 
@@ -40,7 +41,6 @@ export default class CalorieScreen extends React.Component {
         const { email, displayName, uid } = firebase.auth().currentUser;
         this.setState({ email, displayName, uid});
         var newDay = new Date().getDay();
-        const {navigation} = this.props;
 
         // Listens to the database and retrieves required values, then appends these values to the corresponding state
         // Data is returned as a snapshot, all child nodes of 'Users/uid' are returned
@@ -70,6 +70,12 @@ export default class CalorieScreen extends React.Component {
             if(childSnapshot.key == 'TDEE'){
                 this.setState({TDEE: childSnapshot.val()})
             }
+            if(childSnapshot.key == 'dailyGoal'){
+                this.setState({dailyGoal:childSnapshot.val()})
+            }
+            if(childSnapshot.key == 'weeklyGoal'){
+                this.setState({weeklyGoal: childSnapshot.val()})
+            }
         })
         }); 
         
@@ -82,6 +88,10 @@ export default class CalorieScreen extends React.Component {
                     this.setState({reset:day.val()})
                 }
                 day.forEach((entry) => {
+                    if(entry.key == 'change'){
+                        this.setState({change:entry.val()})
+                        console.log(this.state.change)
+                    }
                     entry.forEach((item) => {
                         if(item.key == 'calories'){
                             weekTotal += item.val()
@@ -109,7 +119,7 @@ export default class CalorieScreen extends React.Component {
             })
             this.setState({calories:dailyTotal})
             this.setState({protein: dailyProtein})
-    
+            
         })
         this.getFill()
 
@@ -118,21 +128,27 @@ export default class CalorieScreen extends React.Component {
             this.setState({reset:true})
             firebase.database().ref('Users/' + uid + '/week/').update({'reset': this.state.reset})
         }
-        // If today is Monday and reset:true, remove all week entries
+        // If today is Monday and reset:true, remove all week entries and reset the caloric goal
         if(newDay == 1 && this.state.reset){
             //clear entries
             this.setState({reset:false})
+            var tdee = this.state.TDEE;
+            var resetGoal = tdee - 600;
+            firebase.database().ref('Users/' + uid).update({'dailyGoal':resetGoal});
             firebase.database().ref('Users/' + uid + '/week/').remove();
             firebase.database().ref('Users/' + uid + '/week/').update({'reset':this.state.reset})
             console.log("clear entries")
         }
 
         this.listener();
+
     }
 
+    // Listener that listens for when this screen is in focus, then re-fetches the calories and protein data from firebase
     listener = () => {
         this.props.navigation.addListener('didFocus', () => {
             var total=0;
+            var p=0;
             var userID = this.state.uid;
             var day = new Date().getDay();
 
@@ -142,13 +158,49 @@ export default class CalorieScreen extends React.Component {
                         if(item.key == 'calories'){
                             total += item.val()
                         }
+                        if(item.key == 'protein'){
+                            p += item.val()
+                        }
                     })
                 })
                 this.setState({calories: total})
+                this.setState({protein:p})
+
+                if(this.state.calories > this.state.dailyGoal && !this.state.change){
+                    Alert.alert(
+                        "Oops...",
+                        "You have exceeded your daily caloric goal. However, you may still meet your weekly goal with some changes to the remainder of your week and thus still reach your desired goals. \nWould you like me to make these changes?",
+                        [
+                            {
+                                text:"No",
+                                onPress: () => (firebase.database().ref('Users/' + userID + '/week/' + day).update({'change':true}), this.setState({change:true})),
+                                style:'cancel'
+                            },
+                            {
+                                text:"Yes",
+                                onPress:() => this.alterWeek()
+                            }
+                        ]
+                    )
+                }
             })
+            
         })
     }
 
+    alterWeek = () => {
+        var excess = (this.state.dailyGoal - this.state.calories) * -1;
+        var day = new Date().getDay();
+        var daysLeft = 7 - day;
+        var userID = this.state.uid
+
+        var deduct = excess / daysLeft;
+        var newGoal = Math.round(this.state.dailyGoal - deduct);
+        this.setState({dailyGoal:newGoal});
+        firebase.database().ref('Users/' + userID).update({'dailyGoal':newGoal})
+        this.setState({change:true})
+        firebase.database().ref('Users/' + userID + '/week/' + day).update({'change':true})
+    }
 
     // Change visibility of modal
     setModalVisible = (visible) => {
@@ -157,7 +209,7 @@ export default class CalorieScreen extends React.Component {
 
     getFill = () => {
         var cal = parseInt(this.state.calories, 10);
-        var max = parseInt(this.getDailyGoal(), 10);
+        var max = this.state.dailyGoal;
         let res = (cal/max) * 100;
   
         // only setState if real number, and state is currently empty
@@ -169,7 +221,7 @@ export default class CalorieScreen extends React.Component {
     };
 
     getRemainingDay = () => {
-        var max = parseInt(this.getDailyGoal(), 10);
+        var max = parseInt(this.state.dailyGoal, 10);
         var cal = parseInt(this.state.calories, 10);
 
         var res = max - cal
@@ -177,29 +229,15 @@ export default class CalorieScreen extends React.Component {
     };
 
     getRemainingWeekly = () => {
-        var max = parseInt(this.getWeeklyGoal(), 10);
+        var max = this.state.weeklyGoal;
         var cal = parseInt(this.state.weeklyCalories, 10);
 
         var res = max - cal
         return Math.round(res);
     };
 
-    getDailyGoal = () => {
-        let w = parseInt(this.state.weight,10);
-        let gw = parseInt(this.state.goalWeight,10);
-        let total = parseInt(this.state.TDEE,10);
-
-        if(gw < w){
-            return total - 600;
-        } if(gw == w){
-            return total;
-        }else {
-            return total + 300;
-        } 
-    }
-
     getWeeklyGoal = () => {
-        return this.getDailyGoal() * 7;
+        return this.state.dailyGoal * 7;
     }
 
     getProtein = () => {
@@ -211,7 +249,7 @@ export default class CalorieScreen extends React.Component {
 
     getDeficitDifference = () => {
         var totalTDEE = parseFloat(this.state.TDEE, 10) * 7;
-        var totalWeek = parseFloat(this.getWeeklyGoal(), 10);
+        var totalWeek = parseFloat(this.state.weeklyGoal, 10);
 
         var deficit = totalTDEE - totalWeek;
 
@@ -256,15 +294,23 @@ export default class CalorieScreen extends React.Component {
         }
         let total = this.calculateTDEE();
         let userID = this.state.uid;
+        let dGoal = Math.round(total - 600);
+        let wGoal = dGoal * 7;
         const updates = {
             "weight": this.state.weight,
             "goalWeight": this.state.goalWeight,
             "TDEE": total,
+            "dailyGoal": dGoal,
+            "weeklyGoal": wGoal
         }       
 
         firebase.database().ref(`Users/`+userID).update(updates);
         Alert.alert("Goals updated");
         this.setModalVisible(!this.state.modalVisible)
+        this.setState({
+            dailyGoal:dGoal,
+            weeklyGoal:wGoal
+        })
     }
 
     getDate = () => {
@@ -326,14 +372,14 @@ export default class CalorieScreen extends React.Component {
 
                             <View style={{flexDirection:'column', flex:0.25,}}>
                                 <Text style={{textAlign:'center', fontSize:20,}}>Goal</Text>
-                                <Text style={{textAlign:'center', fontSize:25, color:'#34C759', fontWeight:'bold'}}>{Math.round(this.getDailyGoal())}</Text>
+                                <Text style={{textAlign:'center', fontSize:25, color:'#34C759', fontWeight:'bold'}}>{this.state.dailyGoal}</Text>
 
                                 <Text></Text>
                                 <Text></Text>
                                 <Text></Text>
                                 
                                 <Text style={{textAlign:'center', fontSize:20, textAlignVertical:'bottom'}}>Weekly</Text>
-                                <Text style={{textAlign:'center', fontSize:20, textAlignVertical:'bottom', color:'#34C759', fontWeight:'bold'}}>{Math.round(this.getWeeklyGoal())}</Text>
+                                <Text style={{textAlign:'center', fontSize:20, textAlignVertical:'bottom', color:'#34C759', fontWeight:'bold'}}>{Math.round(this.state.weeklyGoal)}</Text>
                             </View>
 
                         <View style={{flex:0.5, alignSelf:'center'}}>

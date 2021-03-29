@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView, KeyboardAvoidingView, StatusBar, Platform, Dimensions, Modal, FlatList, SnapshotViewIOS } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView, KeyboardAvoidingView, StatusBar, Platform, Dimensions, Modal, FlatList } from 'react-native';
 import * as firebase from 'firebase';
 import {LinearGradient} from 'expo-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -38,7 +38,7 @@ export default class FoodLogScreen extends React.Component {
     async componentDidMount() {
         const { email, displayName, uid } = firebase.auth().currentUser;
         this.setState({ email, displayName, uid});
-        
+
         // Gets the current day of the week as a number 1-7
         var newDate = new Date();
         var newDay = newDate.getDay();
@@ -88,6 +88,7 @@ export default class FoodLogScreen extends React.Component {
         return newDate
     }
 
+    // Search nutritionix database for desired food item
     findFood = async () => {
         const requestOptions = {
             method: 'POST',
@@ -123,7 +124,6 @@ export default class FoodLogScreen extends React.Component {
         var actualCalories=0;
         var actualProtein=0;
         
-        console.log(this.state.foodWeight)
         if(this.state.foodWeight == 0){
             actualCalories = Math.round(this.state.servingCalories)
             actualProtein = Math.round(this.state.servingProtein)
@@ -246,7 +246,7 @@ export default class FoodLogScreen extends React.Component {
 
                         {/* Screen title section */}
                         <View style={styles.card}>
-                            <Text style={{fontSize:40, fontWeight:'bold', color:'black', textAlign:'center', paddingBottom:10}}> Food Log </Text>
+                            <Text style={{fontSize:35, fontWeight:'bold', color:'#007AFF', textAlign:'center', paddingBottom:10}}> Food Log </Text>
                         </View>
 
                         {/* Date section with navigation buttons */}
@@ -366,8 +366,8 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
         height: modalHeight,
-      },
-      card: {
+    },
+    card: {
         marginTop: StatusBar.currentHeight,
         backgroundColor: '#f6f8fa',
         borderRadius:10,

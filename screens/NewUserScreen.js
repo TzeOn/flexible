@@ -29,7 +29,8 @@ export default class NewUserScreen extends React.Component {
             return;
         }
         var total = this.calculateTDEE();
-
+        var dGoal = total - 600
+        var wGoal = dGoal * 7;
         let userID = this.state.uid;
         const updates = {
             "name": this.state.displayName,
@@ -41,6 +42,8 @@ export default class NewUserScreen extends React.Component {
             "activity": this.state.activityLevel,
             "goalWeight": this.state.goalWeight,
             "TDEE": Math.round(total),
+            "dailyGoal": Math.round(dGoal),
+            "weeklyGoal": Math.round(wGoal)
         }       
         //console.log(updates);
         firebase.database().ref(`Users/`+userID).set(updates);
