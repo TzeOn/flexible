@@ -1,12 +1,14 @@
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView, KeyboardAvoidingView, StatusBar, Platform, Dimensions, Modal, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView, KeyboardAvoidingView, StatusBar, Platform, Dimensions, Modal, FlatList, } from 'react-native';
 import * as firebase from 'firebase';
 import {LinearGradient} from 'expo-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { TouchableHighlight } from 'react-native-gesture-handler';
 
 const cardHeight = Dimensions.get('window').height * 0.10;
 const cardWidth = Dimensions.get('window').width * 0.95;
 const modalHeight = Dimensions.get('window').height * 0.85;
+const modalCard = Dimensions.get('window').width * 0.85;
 
 export default class FoodLogScreen extends React.Component {
 
@@ -19,6 +21,7 @@ export default class FoodLogScreen extends React.Component {
         listData:[],
         calories:0,
         modalVisible:false,
+        modalVisible2:false,
         search:"",
         foodName:"",
         foodCal:0,
@@ -31,8 +34,12 @@ export default class FoodLogScreen extends React.Component {
         currentDay:0,
         total:0,
         totalWeek:0,
-        test:[],
-        refresh:false
+        refresh:false,
+        recipeList:[],
+        recipeName:"",
+        recipeCalories:0,
+        recipeProtein:0,
+        recipeWeight:0,
     }
 
     async componentDidMount() {
@@ -48,6 +55,8 @@ export default class FoodLogScreen extends React.Component {
         await ref.once('value', (snapshot) => {
             var total=0;
             this.setState({listData:snapshot.val()})
+            var temp = snapshot.val()
+
             snapshot.forEach((child) => {
                 child.forEach((item) => {
                     if(item.key == 'calories'){
@@ -56,7 +65,24 @@ export default class FoodLogScreen extends React.Component {
                 })
             })
             this.setState({calories:total});
-        });    
+
+            try{
+            Object.entries(temp).map(([key, value]) => {
+                if(key == 'change'){
+                    var key = "change";
+                    delete temp[key]
+                    this.setState({listData:temp})
+                }
+            })
+            } catch (e){
+                console.log(e)
+            }          
+        });  
+
+        // fetch recipes list
+        firebase.database().ref('Users/' + uid + '/recipes/').once('value', (snapshot) => {
+            this.setState({recipeList:snapshot.val()})
+        })
     }
 
     fetchList = async () => {
@@ -66,6 +92,7 @@ export default class FoodLogScreen extends React.Component {
         var ref = firebase.database().ref('Users/' + userID + '/week/' + day);
         await ref.once('value', (snapshot) => {
             var total=0;
+            var temp = snapshot.val()
             this.setState({listData:snapshot.val()})
             snapshot.forEach((child) => {
                 child.forEach((item) => {
@@ -75,11 +102,28 @@ export default class FoodLogScreen extends React.Component {
                 })
             })
             this.setState({calories:total})
+
+            try{
+            Object.entries(temp).map(([key, value]) => {
+                if(key == 'change'){
+                    var key = "change";
+                    delete temp[key]
+                    this.setState({listData:temp})
+                }
+            })
+            }catch (e){
+                console.log(e)
+            }
+            
         })
     }
 
     setModalVisible = (visible) => {
         this.setState({modalVisible: visible});
+    }
+
+    setModalVisible2 = (visible) => {
+        this.setState({modalVisible2: visible});
     }
 
     getDate = () => {
@@ -155,19 +199,6 @@ export default class FoodLogScreen extends React.Component {
     
     };
 
-    test = () => {
-        this.test1()
-        this.test2()
-    }
-
-    test1 = () => {
-        console.log("test 1");
-    }
-
-    test2 = () => {
-        console.log("Test 2")
-    }
-
     deleteEntry = async (item) => {
         var day = this.state.currentDay;
         var userID = this.state.uid;
@@ -185,14 +216,72 @@ export default class FoodLogScreen extends React.Component {
         await this.fetchList();    
     }
 
+    getRecipe = async(item) => {
+        await this.setState({
+            recipeName: item.recipeName,
+            recipeCalories: item.recipeCalories,
+            recipeProtein: item.recipeProtein,
+            recipeWeight: item.recipeWeight
+        })
+        console.log(item.recipeName)
+    }
+
+    addRecipe = async() => {
+        var userID = this.state.uid;
+        var day = new Date().getDay();
+
+        const updates = {
+            'food':this.state.recipeName,
+            'calories': this.state.recipeCalories,
+            'protein': this.state.recipeProtein,
+            'amount': this.state.recipeWeight
+        }
+
+        firebase.database().ref('Users/' + userID + '/week/' + day).push().update(updates);
+        await this.fetchList();
+        this.clearRecipeSelection()
+    }
+
+    clearRecipeSelection = () => {
+        this.setState({
+            recipeName: "",
+            recipeCalories: 0,
+            recipeProtein: 0,
+            recipeWeight: 0
+        })
+    }
+
+    addAlert = () => {
+        Alert.alert(
+            "Select an option",
+            "Would you like to add food from a database search or from your personal recipes?",
+            [
+                {
+                    text:'cancel',
+                    style: 'cancel'
+                },
+                {
+                    text:'search',
+                    onPress: () => this.setModalVisible(true)
+                },
+                {
+                    text:'Recipes',
+                    onPress: () => this.setModalVisible2(true)
+                }
+            ]
+
+        )
+    }
+
     // UI render
     render() {
         const { modalVisible } = this.state;
+        const { modalVisible2 } = this.state;
         return (
             <KeyboardAvoidingView style={styles.container} behavior={Platform.select({android: undefined, ios: 'padding'})}>
                 <View style={styles.container}>
                    
-                        {/* Modal  */}
+                        {/* First Modal - Add from database  */}
                         <Modal
                         animationType="slide"
                         transparent={true}
@@ -204,9 +293,10 @@ export default class FoodLogScreen extends React.Component {
                             <View>
                             <View style={styles.modalView}>
                                 <View style={{width:'100%'}}>
-                                    <Text style={{fontSize:25, textAlign:'center', fontWeight:'bold', borderBottomWidth:1, marginBottom:20}}>Update Diary</Text>
+                                    <Text style={{fontSize:25, textAlign:'center', fontWeight:'bold', borderBottomWidth:1, marginBottom:20}}>Search foods</Text>
                                 </View>
                                 
+                                <View style={{flex:1, justifyContent:'center'}}>
                                 <View style={{flexDirection:'row'}}>
                                 <Text style={{fontSize:20, textAlign:'left', flex:.4}}>Food: </Text>
                                     <View style={{borderWidth:1, borderRadius:10, flex:1}}>                                        
@@ -226,23 +316,111 @@ export default class FoodLogScreen extends React.Component {
                                     </View>                            
                                 </View>
 
-                                <View style={{flexDirection:'row', marginTop:15}}>
-                                    <TouchableOpacity onPress={() => (this.addFood(), this.setModalVisible(!modalVisible))}
-                                    style={{backgroundColor:'white', borderRadius:20, flex:1, justifyContent:'center', alignSelf:'flex-start'}}>
-                                        <Text style={{fontSize:25, textAlign:'center', fontWeight:'bold'}}>Add</Text>
-                                    </TouchableOpacity>                        
-                                </View>
                                 <Text style={{fontSize:10, paddingTop:10}}>*if weight is 0 then standard serving size is recorded instead*</Text>
+                                </View>
                             
-                            
-                            <View style={{flex:1,justifyContent:'flex-end', width:'60%', alignSelf:'center'}}>
-                                <TouchableOpacity style={styles.button} onPress={() => this.setModalVisible(!modalVisible)}>
-                                    <Text>Close</Text>
-                                </TouchableOpacity>
-                            </View>
+                                <View style={{flex:1,justifyContent:'flex-end', width:'100%', alignSelf:'center'}}>
+                                <View style={{flexDirection:'row'}}>
+                                    <TouchableOpacity style={styles.button1} onPress={() => (this.setModalVisible(!modalVisible))}>
+                                        <Text>Close</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.button2} onPress={() => (this.addFood(), this.setModalVisible(!modalVisible))}>
+                                        <Text>Add</Text>
+                                    </TouchableOpacity>
+
+                                </View>
+                                </View>
                             </View>
                         </View>
                         </Modal>
+
+                        {/* Second Modal - Recipes */}
+                        <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalVisible2}
+                        onRequestClose={() => {
+                            this.setModalVisible2(!modalVisible2);
+                        }}
+                        >
+                            <View>
+                            <View style={styles.modalView}>
+                                <View style={{width:'100%'}}>
+                                    <Text style={{fontSize:20, textAlign:'center', fontWeight:'bold', borderBottomWidth:1, marginBottom:10}}>Search Recipes</Text>
+                                </View>
+
+                                <View style={{flex:1, width:modalCard, borderRadius:20}}>
+                                {this.state.recipeList == null && (                              
+                                    <Text style={{textAlign:'center', textAlignVertical:'center', fontSize:30, color:'#007AFF'}}>No recipes added yet</Text>                            
+                                )}
+
+                                {this.state.recipeList != null && (
+                                <FlatList 
+                                data={Object.keys(this.state.recipeList)}
+                                extraData={Object.keys(this.state.recipeList)}
+                                renderItem={( {item }) => (
+                                    <TouchableOpacity onPress={() => this.getRecipe(this.state.recipeList[item])}>
+                                    <View style={{flex:1, borderWidth:1, marginBottom:10, borderRadius:10, padding:6, backgroundColor:'#f6f8fa' }}>
+                                    <View style={{flexDirection:'row'}}>
+                                    <Text style={{flex:1, fontSize:16,fontWeight:'bold', textAlign:'center'}}>{this.state.recipeList[item].recipeName}</Text>
+                                    </View>
+                                    <View style={{flex:1, flexDirection:'row'}}>
+                                        <View style={{flex:0.33}}>
+                                         <Text style={{fontSize:14, flex:1, textAlign:'center'}}>Weight(g):</Text>
+                                         <Text style={{fontSize:12, flex:1, textAlign:'center'}}>{this.state.recipeList[item].recipeWeight}</Text>   
+                                        </View>
+                                        <View style={{flex:0.33}}>
+                                         <Text style={{fontSize:14, flex:1, textAlign:'center'}}>Protein:</Text>
+                                         <Text style={{fontSize:12, flex:1, textAlign:'center'}}>{this.state.recipeList[item].recipeProtein}g</Text>   
+                                        </View>
+                                        <View style={{flex:0.33}}>
+                                         <Text style={{fontSize:14, flex:1, textAlign:'center'}}>Calories:</Text>
+                                         <Text style={{fontSize:12, flex:1, textAlign:'center'}}>{this.state.recipeList[item].recipeCalories}cal</Text>   
+                                        </View>
+                            
+                                    </View>
+                                    </View>
+                                    </TouchableOpacity>
+                                )}                               
+                                keyExtracter={({item, index}) => index.toString()}                    
+                                />
+                                )}
+                            </View>
+                               
+                            <View style={{flex:.2, }}>
+                                <Text style={{fontSize:25, color:'#007AAF'}}>Recipe: {this.state.recipeName}</Text>
+                            </View>
+                            <View style={{flexDirection:'row'}}>
+                                <Text style={{fontSize:20, textAlign:'left', flex:.4}}>Amount: </Text>
+                                <View style={{borderWidth:1, borderRadius:10, flex:1}}>                                        
+                                    <TextInput style={{fontSize:20, width:'100%', textAlign:'center', }} 
+                                    placeholder="Default serving/x grams" 
+                                    onChangeText={recipeWeight => this.setState({recipeWeight})} value={this.state.recipeWeight}></TextInput>                                        
+                                </View>
+                                                              
+                            </View>
+
+                            <View style={{flex:1,justifyContent:'flex-end', width:'100%', alignSelf:'center'}}>
+                            <View style={{flexDirection:'row'}}>
+                                <TouchableOpacity style={styles.button1} onPress={() => (this.clearRecipeSelection(),this.setModalVisible2(!modalVisible2))}>
+                                    <Text>Close</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={styles.button2} onPress={() => (this.addRecipe(), this.setModalVisible2(!modalVisible2))}>
+                                    <Text>Add</Text>
+                                </TouchableOpacity>
+
+                            </View>
+                        </View>
+
+                            </View>
+                        </View>
+                        </Modal>
+
+
+
+
 
                         {/* Screen title section */}
                         <View style={styles.card}>
@@ -312,7 +490,7 @@ export default class FoodLogScreen extends React.Component {
                     
                     <View style={{flex:0.1, justifyContent:'flex-end', alignContent:'center'}}>
                         <TouchableOpacity>
-                            <Text style={{fontSize:50, textAlign:'center'}} onPress={() => this.setModalVisible(true)}>
+                            <Text style={{fontSize:50, textAlign:'center'}} onPress={() => this.addAlert()}>
                                 <MaterialCommunityIcons name="plus-circle" color={'black'} size={60} />
                             </Text>
                         </TouchableOpacity>
@@ -381,5 +559,25 @@ const styles = StyleSheet.create({
         marginBottom:5,
         borderWidth:1,
         borderColor:'grey'       
+    },
+    button1: {
+        backgroundColor: 'orange',
+        borderRadius:20,
+        height: 52,
+        alignItems:'center',
+        justifyContent:'center',
+        marginTop:10,
+        flex:1,
+        marginRight:5
+    },
+    button2: {
+        backgroundColor: '#34C759',
+        borderRadius:20,
+        height: 52,
+        alignItems:'center',
+        justifyContent:'center',
+        marginTop:10,
+        flex:1,
+        marginLeft:5,
     },
 });

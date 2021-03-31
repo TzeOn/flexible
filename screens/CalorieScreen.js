@@ -145,14 +145,14 @@ export default class CalorieScreen extends React.Component {
     }
 
     // Listener that listens for when this screen is in focus, then re-fetches the calories and protein data from firebase
-    listener = () => {
-        this.props.navigation.addListener('didFocus', () => {
+    listener = async() => {
+        this.props.navigation.addListener('didFocus', async() => {
             var total=0;
             var p=0;
             var userID = this.state.uid;
             var day = new Date().getDay();
 
-            firebase.database().ref('Users/' + userID + '/week/' + day).once('value', (snapshot)=>{
+            await firebase.database().ref('Users/' + userID + '/week/' + day).once('value', (snapshot)=>{
                 snapshot.forEach((entry)=>{
                     entry.forEach((item)=>{
                         if(item.key == 'calories'){
@@ -173,7 +173,7 @@ export default class CalorieScreen extends React.Component {
                         [
                             {
                                 text:"No",
-                                onPress: () => (firebase.database().ref('Users/' + userID + '/week/' + day).update({'change':true}), this.setState({change:true})),
+                                onPress: () => this.noChange(),
                                 style:'cancel'
                             },
                             {
@@ -186,6 +186,14 @@ export default class CalorieScreen extends React.Component {
             })
             
         })
+    }
+
+    noChange = () => {
+        var userID = this.state.uid;
+        var day = new Date().getDay();
+
+        this.setState({change:true})
+        firebase.database().ref('Users/' + userID + '/week/' + day).update({'change':this.state.change})
     }
 
     alterWeek = () => {
@@ -453,6 +461,10 @@ export default class CalorieScreen extends React.Component {
 
                         <View style={{flex:1, paddingTop:20}}>
                             <Text onPress={() => this.setModalVisible(true)} style={{textAlign:'center', fontSize:10, color:'blue'}}>Edit goals</Text>
+                        </View>
+
+                        <View style={{flex:1}}>
+                            <Text style={{textAlign:'center', fontSize:20}}>On track to lose: {this.getDeficitDifference().toFixed(2)} kg this week</Text>
                         </View>
                         
                     </View>

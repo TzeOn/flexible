@@ -30,16 +30,29 @@ export default class RecipeScreen extends React.Component {
         servingCalories:0,
         servingProtein:0,
         servingWeight:0,
+        recipeList:[]
         
     }
 
     componentDidMount() {
         const { email, displayName, uid } = firebase.auth().currentUser;
         this.setState({ email, displayName, uid});
+
+        firebase.database().ref('Users/' + uid + '/recipes/').once('value', (snapshot) => {
+            this.setState({recipeList:snapshot.val()})
+        })
     }
 
     setModalVisible = (visible) => {
         this.setState({modalVisible: visible});
+    }
+
+    fetchRecipes = () => {
+        var userID = this.state.uid;
+
+        firebase.database().ref('Users/' + userID + '/recipes/').once('value', (snapshot) => {
+            this.setState({recipeList:snapshot.val()})
+        })
     }
 
     findFood = async() => {
@@ -124,16 +137,6 @@ export default class RecipeScreen extends React.Component {
         var recipeProtein = 0;
         var userID = this.state.uid;
 
-        // Iterate every ingredient object in foodlist for total calories and protein values
-        // for(const {iName, iCalories, iProtein, iWeight} in this.state.foodList){       
-        //     promises.push(recipeCalories += iCalories);
-        //     promises.push(recipeProtein += iProtein);
-        //     console.log(iCalories)
-        //     console.log(iProtein)
-            
-        // }
-        // await Promise.all(promises)
-
         Object.entries(this.state.foodList).map(([key, value])=> {
             promises.push(recipeCalories += value.calories)
             promises.push(recipeProtein += value.protein)
@@ -148,10 +151,10 @@ export default class RecipeScreen extends React.Component {
             'recipeProtein': recipeProtein
         }
 
-        //console.log(updates)
         // Add recipe to firebase
         firebase.database().ref('Users/' + userID + '/recipes/').push().update(updates)
 
+        this.fetchRecipes();
         this.setModalVisible(!this.state.modalVisible);
     }
 
@@ -244,6 +247,9 @@ export default class RecipeScreen extends React.Component {
                             </View>
                             <Text style={{fontSize:10, paddingTop:10}}>*if weight is 0 then standard serving size is recorded instead*</Text>
                         
+                        <View>
+
+                        </View>
                         
                         <View style={{flex:1,justifyContent:'flex-end', width:'100%', alignSelf:'center'}}>
                             <View style={{flexDirection:'row'}}>
@@ -260,6 +266,54 @@ export default class RecipeScreen extends React.Component {
                         </View>
                     </View>
                     </Modal>
+
+                    {/* Screen title section */}
+                    <View style={styles.card}>
+                        <Text style={{fontSize:35, fontWeight:'bold', color:'#007AFF', textAlign:'center', paddingBottom:10}}> Recipes </Text>
+                    </View>
+
+                    <View style={{flex:1, width:cardWidth,marginTop:10}}>
+                            {this.state.recipeList == null && (                              
+                                <Text style={{textAlign:'center', textAlignVertical:'center', fontSize:30, color:'#007AFF'}}>Try adding some of your own personal recipes!</Text>                            
+                            )}
+
+                            {this.state.recipeList != null && (
+                                <FlatList 
+                                data={Object.keys(this.state.recipeList)}
+                                extraData={Object.keys(this.state.recipeList)}
+                                renderItem={( {item }) => (
+                                    <View style={{flex:1, borderWidth:1, marginBottom:10, borderRadius:5, padding:6, backgroundColor:'#f6f8fa' }}>
+                                    <View style={{flexDirection:'row'}}>
+                                    <Text style={{flex:.9, fontSize:22,fontWeight:'bold', textAlign:'center'}}>{this.state.recipeList[item].recipeName}</Text>
+                                    <TouchableOpacity style={{flex:0.1, paddingTop:5}}
+                                        onPress={() => console.log("button pressed")}>
+                                            {/* this.deleteEntry(this.state.listData[item].food */}
+                                        <Text style={{textAlign:'right'}}>
+                                        <MaterialCommunityIcons name="delete" color={'red'} size={20} />
+                                        </Text>
+                                    </TouchableOpacity>
+                                    </View>
+                                    <View style={{flex:1, flexDirection:'row'}}>
+                                        <View style={{flex:0.33}}>
+                                         <Text style={{fontSize:20, flex:1, textAlign:'center'}}>Weight(g):</Text>
+                                         <Text style={{fontSize:20, flex:1, textAlign:'center'}}>{this.state.recipeList[item].recipeWeight}</Text>   
+                                        </View>
+                                        <View style={{flex:0.33}}>
+                                         <Text style={{fontSize:20, flex:1, textAlign:'center'}}>Protein:</Text>
+                                         <Text style={{fontSize:20, flex:1, textAlign:'center'}}>{this.state.recipeList[item].recipeProtein}g</Text>   
+                                        </View>
+                                        <View style={{flex:0.33}}>
+                                         <Text style={{fontSize:20, flex:1, textAlign:'center'}}>Calories:</Text>
+                                         <Text style={{fontSize:20, flex:1, textAlign:'center'}}>{this.state.recipeList[item].recipeCalories}cal</Text>   
+                                        </View>
+                            
+                                    </View>
+                                    </View>
+                                )}                               
+                                keyExtracter={({item, index}) => index.toString()}                    
+                            />
+                            )}
+                        </View>
 
                     <View style={{flex:0.1, justifyContent:'flex-end', alignContent:'center'}}>
                         <TouchableOpacity>

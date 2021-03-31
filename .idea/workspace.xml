@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fbcf3fcb-68ee-4b86-a36b-ba6234caa29a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/screens/CalorieScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/CalorieScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/screens/LoginScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/LoginScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/screens/NewUserScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/NewUserScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/screens/ProfileScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/ProfileScreen.js" afterDir="false" />
-    </list>
+    <list default="true" id="fbcf3fcb-68ee-4b86-a36b-ba6234caa29a" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -40,6 +35,10 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
+    <state x="535" y="197" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1617028904717">
+      <screen x="0" y="0" width="1707" height="920" />
+    </state>
+    <state x="535" y="197" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1707.920@0.0.1707.920" timestamp="1617028904717" />
     <state x="253" y="120" width="1200" height="680" key="AVDManager" timestamp="1616029947709">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
