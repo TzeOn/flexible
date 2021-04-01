@@ -28,7 +28,7 @@ var database = firebase.database();
 
 
 const TabNavigator = createBottomTabNavigator({
-  Auth: {
+  Calories: {
     screen: CalorieScreen,
     navigationOptions: {
       tabBarLabel: 'Home',
@@ -75,7 +75,7 @@ const TabNavigator = createBottomTabNavigator({
   },
   },
   {
-    initialRouteName: 'Auth',
+    initialRouteName: 'Calories',
   }
 )
 
@@ -97,6 +97,7 @@ const AuthNavigator = createStackNavigator(
   {
     Dashboard: DashboardScreen,
     NewUser: NewUserScreen,
+    
   },
   {
     headerMode: 'none'

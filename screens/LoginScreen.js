@@ -1,7 +1,10 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, StatusBar, Dimensions } from 'react-native';
 import * as firebase from 'firebase';
+
+const trueWidth = Dimensions.get('window').width;
+const inputWidth = Dimensions.get('window').width * .7;
 
 export default class LoginScreen extends React.Component {
     state = {
@@ -32,14 +35,18 @@ export default class LoginScreen extends React.Component {
         return (
             // This is the overall screen view
             <KeyboardAvoidingView style={styles.container} behavior={Platform.select({android: undefined, ios: 'padding'})}>
-                <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>                
-                    <Text style={styles.header}> Log in to your account </Text>
-                    
-                    <View>
-                        {this.state.errorMessage && <Text style={{color:'red', fontSize:16}}>{this.state.errorMessage}</Text>}
-                    </View>
+                <ScrollView contentContainerStyle={{flex:1}}>
+                <View style={{flex:.3, paddingTop:StatusBar.currentHeight, backgroundColor:'#007AAF', width: trueWidth, borderBottomLeftRadius:30, borderBottomRightRadius:30, justifyContent:'center'}}>
+                    <Text style={{fontSize:50, color:'white', textAlign:'center', paddingBottom:20, alignSelf:'center'}}>Smart Coach</Text>
+                </View>
+                <View>
+                    {this.state.errorMessage && <Text style={{color:'red', fontSize:16}}>{this.state.errorMessage}</Text>}
+                </View>
 
-                <View style={{marginHorizontal: 32}}>
+            <View>
+                <Text style={styles.header}> Log in to your account </Text>
+            </View>
+                <View style={{marginHorizontal: 32, flex:1, alignContent:'center'}}>
                     <Text style={styles.subheader}> Email Address </Text>
                     <TextInput style={styles.input} placeholder="Email" onChangeText={email => this.setState({email})} value={this.state.email}></TextInput>
 
@@ -48,24 +55,19 @@ export default class LoginScreen extends React.Component {
 
                     <View style={{alignItems:'center'}}>
                         <TouchableOpacity onPress={this.doLogin} style={styles.button}>
-                            <Text style={{color:'black', textAlign:'center', fontWeight:'bold', fontSize:20}}> Login </Text>
+                            <Text style={{color:'white', textAlign:'center', fontWeight:'bold', fontSize:20}}> Login </Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={this.register}>
-                            <Text style={{marginTop: 10, color:'black',fontSize: 13, textAlign:'center'}}>Don't have an account? <Text style={{color:'#1232ff'}}>Sign Up</Text></Text>
+                            <Text style={{marginTop: 10, marginBottom: 10, color:'black',fontSize: 13, textAlign:'center'}}>Don't have an account? <Text style={{color:'#1232ff'}}>Sign Up</Text></Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={this.resetPassword}>
-                            <Text style={{marginTop: 20, color:'black',fontSize: 13, textAlign:'center'}}>Forgotten your password? <Text style={{color:'#1232ff'}}>Reset Here</Text></Text>
+                            <Text style={{marginTop: 10, color:'black',fontSize: 13, textAlign:'center'}}>Forgotten your password? <Text style={{color:'#1232ff'}}>Reset Here</Text></Text>
                         </TouchableOpacity>
                     </View>
                 </View>
-                </LinearGradient>
-
-                
-                
-                
-
+                </ScrollView>
             </KeyboardAvoidingView>
         );
     }
@@ -79,16 +81,15 @@ const styles = StyleSheet.create({
         //backgroundColor:'#B23AFC'
     },
     header: {
-        fontWeight: "800",
+        // fontWeight: "bold",
         fontSize: 35,
-        color: "black",
-        marginBottom:50,       
+        color: "#007AAF",
+        marginBottom:50,  
+        textAlign:'center'     
     },
 
     subheader: {
-        fontWeight: "800",
         fontSize: 25,
-        color: "#514E5A",
         marginTop: 5,
         color:'black',
         alignSelf:'center'
@@ -101,18 +102,10 @@ const styles = StyleSheet.create({
         borderColor: '#BAB7C3',
         borderRadius:30,
         paddingHorizontal: 16,
-        color: '#fff'
-    },
-    circle: {
-        width: 500,
-        height: 500,
-        borderRadius: 500 / 2,
-        //backgroundColor:'#c97afa',
-        position:'absolute',
-        left: -100,
-        top: -20
-
-        //#B23AFC
+        color: 'black',
+        width: inputWidth,
+        textAlign:'center',
+        alignSelf:'center'
     },
     background: {
         flex:1,
@@ -122,7 +115,7 @@ const styles = StyleSheet.create({
     },
     button: {
         marginHorizontal:30,
-        backgroundColor: '#fff',
+        backgroundColor: '#007AAF',
         borderRadius:20,
         height: 52,
         width: '80%',

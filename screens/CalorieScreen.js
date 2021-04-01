@@ -40,12 +40,13 @@ export default class CalorieScreen extends React.Component {
     async componentDidMount() {
         const { email, displayName, uid } = firebase.auth().currentUser;
         this.setState({ email, displayName, uid});
+        firebase.database().ref('Users/' + uid).update({'name' : displayName})
         var newDay = new Date().getDay();
-
         // Listens to the database and retrieves required values, then appends these values to the corresponding state
         // Data is returned as a snapshot, all child nodes of 'Users/uid' are returned
         // child nodes are filtered using if statements where the states are set using the value of each child snapshot
         
+
         var ref = firebase.database().ref('Users/' + uid);
         await ref.once('value', (snapshot) => {
         snapshot.forEach((childSnapshot) => {
@@ -152,6 +153,17 @@ export default class CalorieScreen extends React.Component {
             var userID = this.state.uid;
             var day = new Date().getDay();
 
+            await firebase.database().ref('Users/' + userID).once('value', (snapshot) => {
+                snapshot.forEach((child) => {
+                    if(child.key == 'dailyGoal'){
+                        this.setState({dailyGoal: child.val()})
+                    }
+                    if(child.key == 'weeklyGoal'){
+                        this.setState({weeklyGoal: child.val()})
+                    }
+                })
+            })
+
             await firebase.database().ref('Users/' + userID + '/week/' + day).once('value', (snapshot)=>{
                 snapshot.forEach((entry)=>{
                     entry.forEach((item)=>{
@@ -161,6 +173,7 @@ export default class CalorieScreen extends React.Component {
                         if(item.key == 'protein'){
                             p += item.val()
                         }
+                        
                     })
                 })
                 this.setState({calories: total})
@@ -464,7 +477,7 @@ export default class CalorieScreen extends React.Component {
                         </View>
 
                         <View style={{flex:1}}>
-                            <Text style={{textAlign:'center', fontSize:20}}>On track to lose: {this.getDeficitDifference().toFixed(2)} kg this week</Text>
+                            <Text style={{textAlign:'center', fontSize:20, color:'#007AAF'}}>On track to lose: {this.getDeficitDifference().toFixed(2)} kg this week!</Text>
                         </View>
                         
                     </View>

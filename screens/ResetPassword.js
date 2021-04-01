@@ -5,15 +5,30 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 export default class ResetPassword extends React.Component {
     state = {
-        email: ""
+        email: "",
+        displayName:"",
+        uid:""
+    }
+
+    componentDidMount() {
+        
     }
 
     resetPassword = () => {
         firebase.auth().sendPasswordResetEmail(this.state.email)
         .then(() => {
-
+            Alert.alert(
+                "Password reset",
+                "Reset email has been sent.",
+                [
+                    {
+                        text:'close',
+                        style:'cancel'
+                    }
+                ]
+            )
         }, (error) => {
-
+            
         });
     }
 
@@ -24,22 +39,21 @@ export default class ResetPassword extends React.Component {
     render() {
         return(
             <KeyboardAvoidingView style={styles.container}>
-                <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>
-                    <View style={{marginHorizontal:32}}>
+                    <View style={{marginHorizontal:32, borderWidth:1, borderRadius:60, padding:80, }}>
                         <Text style={styles.title}>Reset Password</Text>
                         <Text style={styles.header}>Enter Email</Text>
                             <View style={{alignItems:'center'}}>
                                 <TextInput style={styles.input} 
+                                    placeholder='Email'
                                     onChangeText={email => this.setState({email})} 
                                     value={this.state.email}></TextInput>
 
                                 <TouchableOpacity style={styles.button} onPress={this.resetPassword}>
-                                    <Text style={{color:'black', fontSize: 20, fontWeight:'bold', textAlign:'center'}}>Send Reset Email</Text>
+                                    <Text style={{color:'white', fontSize: 20, fontWeight:'bold', textAlign:'center'}}>Send Reset Email</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={this.backToLogin}><Text style={{color:'white', fontSize:13, marginTop: 15}}>Back to Login</Text></TouchableOpacity>
+                                <TouchableOpacity onPress={this.backToLogin}><Text style={{color:'#007AFF', fontSize:13, marginTop: 15, padding:20}}>Back to Login</Text></TouchableOpacity>
                             </View>
                     </View>
-                </LinearGradient>
             </KeyboardAvoidingView>
         )
     }
@@ -51,19 +65,17 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        //backgroundColor:'#B23AFC'
     },
     header: {
-        fontWeight: "800",
         fontSize: 25,
         marginTop: 5,
-        color:'white',
-        
+        color:'black',
+        textAlign:'center'
     },
     title: {
-        fontWeight: "800",
+        fontWeight: "bold",
         fontSize: 30,
-        color: "white",
+        color: "#007AAF",
         marginTop: 5,
         marginBottom: 20
     }, 
@@ -75,18 +87,9 @@ const styles = StyleSheet.create({
         borderColor: '#BAB7C3',
         borderRadius:30,
         paddingHorizontal: 16,
-        color: '#fff'
-    },
-    circle: {
-        width: 500,
-        height: 500,
-        borderRadius: 500 / 2,
-        //backgroundColor:'#c97afa',
-        position:'absolute',
-        left: -100,
-        top: -20
-
-        //#B23AFC
+        color: 'black',
+        width:'100%',
+        textAlign:'center'
     },
     background: {
         flex:1,
@@ -96,7 +99,7 @@ const styles = StyleSheet.create({
     },
     button: {
         marginHorizontal:30,
-        backgroundColor: '#fff',
+        backgroundColor: '#007AAF',
         borderRadius:20,
         height: 52,
         width: '100%',

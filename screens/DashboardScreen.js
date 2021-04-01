@@ -42,6 +42,7 @@ export default class DashboardScreen extends React.Component {
                 // Exists, navigate to logged in homepage
             }
         })
+        this.forceUpdate();
         
     };
 

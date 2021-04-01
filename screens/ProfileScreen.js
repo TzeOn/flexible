@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity,ScrollView, Dimensi
 import * as firebase from 'firebase';
 import {LinearGradient} from 'expo-linear-gradient';
 import {Picker} from '@react-native-picker/picker';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const cardHeight = Dimensions.get('window').height * 0.15;
 const cardWidth = Dimensions.get('window').width * 0.95;
@@ -84,7 +85,9 @@ export default class ProfileScreen extends React.Component {
             alert('Please complete the form');
             return;
         }
-        let total = this.calculateTDEE();
+        let total = Math.round(this.calculateTDEE());
+        let dGoal = Math.round(total - 600);
+        let wGoal = Math.round(dGoal *7);
         let userID = this.state.uid;
         const updates = {
             "age": this.state.age,
@@ -93,17 +96,20 @@ export default class ProfileScreen extends React.Component {
             "gender": this.state.gender,
             "activity": this.state.activityLevel,
             "TDEE": total,
+            "dailyGoal": dGoal,
+            "weeklyGoal": wGoal
         }       
 
         firebase.database().ref(`Users/`+userID).update(updates);
         Alert.alert("Changes successful");
+        this.setModalVisible(!this.state.modalVisible)
     }
     
     calculateTDEE = () => {
-        var w = parseInt(this.state.weight, 10);
-        var h = parseInt(this.state.height, 10);
-        var a = parseInt(this.state.age, 10);
-        var aL = parseInt(this.state.activityLevel, 10);
+        var w = this.state.weight;
+        var h = this.state.height;
+        var a = this.state.age
+        var aL = this.state.activityLevel;
 
         if(this.state.gender == 'Male'){
             var bmr = (w * 10) + (h * 6.25) - (a * 5) + 5
@@ -111,7 +117,8 @@ export default class ProfileScreen extends React.Component {
             var bmr = (w * 10) + (h * 6.25) - (a * 5) - 161
         }
 
-        return bmr * aL;
+        var tdee = bmr * aL;
+        return tdee;
     }
 
     // UI render
@@ -211,8 +218,8 @@ export default class ProfileScreen extends React.Component {
                     <View style={styles.cardContainer}>
                     <View style={{flexDirection:'row', flex:1 }}>
                         <Text style={{flex:.9, fontSize:30, paddingLeft:20, alignSelf:'flex-start'}}>Personal Details</Text>
-                        <TouchableOpacity style={{alignSelf:'center', flex:0.1, }}>
-                            <Text onPress={() => this.setModalVisible(true)} style={{color:'blue'}}>Edit</Text>
+                        <TouchableOpacity style={{alignSelf:'center', flex:0.1, }} onPress ={() => this.setModalVisible(true)}>
+                            <MaterialCommunityIcons  name="pencil" color={'#007AAF'} size={30} />
                         </TouchableOpacity>
                     </View>
                     <View style={styles.rowView}> 

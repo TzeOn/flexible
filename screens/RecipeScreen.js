@@ -7,6 +7,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 const cardHeight = Dimensions.get('window').height * 0.10;
 const cardWidth = Dimensions.get('window').width * 0.95;
 const modalHeight = Dimensions.get('window').height * 0.85;
+const modalCard = Dimensions.get('window').width * 0.85;
 
 // This page checks whether the user logging in is a new or previous user to navigate them to the correct page
 export default class RecipeScreen extends React.Component {
@@ -158,6 +159,39 @@ export default class RecipeScreen extends React.Component {
         this.setModalVisible(!this.state.modalVisible);
     }
 
+    deleteRecipe = async (item) => {
+        var userID = this.state.uid;
+        var ref = firebase.database().ref('Users/' + userID + '/recipes/');
+        var postID;
+        
+        await ref.once('value', (snapshot) => {
+            snapshot.forEach((child) => {
+                if(child.val().recipeName == item){
+                    postID = child.key
+                    firebase.database().ref('Users/' + userID + '/recipes/' + postID).remove();
+                }
+            })        
+        })
+        await this.fetchRecipes();    
+    }
+
+    getRecipe = async(item) => {
+        await this.setState({
+            recipeName: item.recipeName,
+            recipeCalories: item.recipeCalories,
+            recipeProtein: item.recipeProtein,
+            recipeWeight: item.recipeWeight
+        })
+        console.log(item.recipeName)
+    }
+
+    clearIngredients = () => {
+        this.setState({
+            foodList:[],
+            recipeName:""
+        })
+    }
+
     confirm = () => {
         Alert.alert(
             "Close",
@@ -165,7 +199,7 @@ export default class RecipeScreen extends React.Component {
             [
                 {
                     text: "Close",
-                    onPress:() => this.setModalVisible(!this.state.modalVisible), //Also clear current ingredients list
+                    onPress:() => (this.setModalVisible(!this.state.modalVisible), this.clearIngredients()), //Also clear current ingredients list
                     style: 'cancel'
                 },
                 {
@@ -247,18 +281,29 @@ export default class RecipeScreen extends React.Component {
                             </View>
                             <Text style={{fontSize:10, paddingTop:10}}>*if weight is 0 then standard serving size is recorded instead*</Text>
                         
-                        <View>
-
+                        <View style={{flex:1, width:modalCard,}}>
+                            <Text style={{textAlign:'center', fontSize:18, marginTop:5, borderBottomWidth:1, fontWeight:'bold'}}>Current ingredients:</Text>
+                            <FlatList 
+                            data={Object.keys(this.state.foodList)}
+                            extraData={Object.keys(this.state.foodList)}
+                            renderItem={( {item }) => (
+                                <View style={{flex:1,flexDirection:'row'}}>
+                                <Text style={{flex:.7, fontSize:16, textAlign:'center'}}>{this.state.foodList[item].name}</Text>
+                                <Text style={{flex:.3, fontSize:16, textAlign:'center'}}>{this.state.foodList[item].weight}g</Text>
+                                </View>
+                                )}                               
+                            keyExtracter={({item, index}) => index.toString()}                    
+                            />
                         </View>
                         
                         <View style={{flex:1,justifyContent:'flex-end', width:'100%', alignSelf:'center'}}>
                             <View style={{flexDirection:'row'}}>
                                 <TouchableOpacity style={styles.button} onPress={() => this.confirm()}>
-                                    <Text>Close</Text>
+                                    <Text style={{fontWeight:'bold', fontSize:20, color:'white'}}>Close</Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.button2} onPress={() => this.addRecipe()}>
-                                    <Text>Add Recipe</Text>
+                                <TouchableOpacity style={styles.button2} onPress={() => (this.addRecipe(), this.clearIngredients())}>
+                                    <Text style={{fontWeight:'bold', fontSize:20, color:'white'}}>Add Recipe</Text>
                                 </TouchableOpacity>
 
                             </View>
@@ -286,7 +331,7 @@ export default class RecipeScreen extends React.Component {
                                     <View style={{flexDirection:'row'}}>
                                     <Text style={{flex:.9, fontSize:22,fontWeight:'bold', textAlign:'center'}}>{this.state.recipeList[item].recipeName}</Text>
                                     <TouchableOpacity style={{flex:0.1, paddingTop:5}}
-                                        onPress={() => console.log("button pressed")}>
+                                        onPress={() => this.deleteRecipe(this.state.recipeList[item].recipeName)}>
                                             {/* this.deleteEntry(this.state.listData[item].food */}
                                         <Text style={{textAlign:'right'}}>
                                         <MaterialCommunityIcons name="delete" color={'red'} size={20} />

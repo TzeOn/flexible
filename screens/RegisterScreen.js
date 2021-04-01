@@ -1,7 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Alert, StatusBar, Dimensions, Platform } from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
 import * as firebase from 'firebase';
+
+const trueWidth = Dimensions.get('window').width;
+const inputWidth = Dimensions.get('window').width * .7;
 
 export default class RegisterScreen extends React.Component {
     state = {
@@ -26,35 +29,36 @@ export default class RegisterScreen extends React.Component {
     
     render() {
         return (
-            <KeyboardAvoidingView style={styles.container}>
-                <LinearGradient colors={['rgba(17, 236, 193, 0.8)', 'transparent']} style={styles.background}>
-                <View style={{marginHorizontal: 32}}>
+            <KeyboardAvoidingView style={styles.container} behavior={Platform.select({android: undefined, ios: 'padding'})}>
+                <ScrollView>
+            <View style={{flex:.5, paddingTop:StatusBar.currentHeight, backgroundColor:'#007AAF', width: trueWidth, borderBottomLeftRadius:30, borderBottomRightRadius:30, justifyContent:'center'}}>
+                <Text style={{fontSize:50, color:'white', textAlign:'center', paddingBottom:20, alignSelf:'center'}}>Smart Coach</Text>
+            </View>
+            <View>
+                <Text style={styles.header}> Create an account  </Text>
+            </View>
+                <View style={{marginHorizontal: 32, flex:1}}>
 
-                    <Text style={styles.header}> Full Name </Text>
+                    <Text style={styles.subheader}> Full Name </Text>
                     <TextInput style={styles.input} placeholder="Name" onChangeText={name => this.setState({name})} value={this.state.name}></TextInput>
 
-                    <Text style={styles.header}> Email Address </Text>
+                    <Text style={styles.subheader}> Email Address </Text>
                     <TextInput style={styles.input} placeholder="Email" onChangeText={email => this.setState({email})} value={this.state.email}></TextInput>
 
-                    <Text style={styles.header}> Password </Text>
+                    <Text style={styles.subheader}> Password </Text>
                     <TextInput style={styles.input} secureTextEntry={true} placeholder="Password" onChangeText={password => this.setState({password})} value={this.state.password}></TextInput>
 
                     <View style={{alignItems:'center'}}>
                         <TouchableOpacity onPress={this.registerUser} style={styles.button}>
-                            <Text style={{color:'black', textAlign:'center', fontWeight:'bold', fontSize:20}}> Sign Up </Text>
+                            <Text style={{color:'white', textAlign:'center', fontWeight:'bold', fontSize:20}}> Sign Up </Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={() => this.props.navigation.navigate('Login')}>
-                            <Text style={{marginTop: 10, color:'white',fontSize: 13, textAlign:'center'}}>Already have an account? <Text style={{color:'#1232ff'}}>Log In</Text></Text>
+                            <Text style={{marginTop: 20, color:'black',fontSize: 13, textAlign:'center'}}>Already have an account? <Text style={{color:'#1232ff'}}>Log In</Text></Text>
                         </TouchableOpacity>
                     </View>
                 </View>
-                </LinearGradient>
-
-                
-                
-                
-
+                </ScrollView>
             </KeyboardAvoidingView>
         );
     }
@@ -69,11 +73,10 @@ const styles = StyleSheet.create({
     },
     header: {
         fontWeight: "800",
-        fontSize: 25,
-        color: "#514E5A",
-        marginTop: 5,
-        color:'white',
-        
+        fontSize: 35,
+        color: "#007AAF",
+        marginBottom: 40,
+        textAlign:'center'
     },
     input: {
         marginTop: 3,
@@ -82,28 +85,20 @@ const styles = StyleSheet.create({
         borderColor: '#BAB7C3',
         borderRadius:30,
         paddingHorizontal: 16,
-        color: '#fff'
+        color: 'black',
+        width:inputWidth,
+        textAlign:'center',
+        alignSelf:'center'
     },
-    circle: {
-        width: 500,
-        height: 500,
-        borderRadius: 500 / 2,
-        //backgroundColor:'#c97afa',
-        position:'absolute',
-        left: -100,
-        top: -20
-
-        //#B23AFC
-    },
-    background: {
-        flex:1,
-        justifyContent:'center',
-        alignItems:'center',
-        width: '100%'
+    subheader: {
+        fontSize: 25,
+        marginTop: 5,
+        color:'black',
+        alignSelf:'center'
     },
     button: {
         marginHorizontal:30,
-        backgroundColor: '#fff',
+        backgroundColor: '#007AFF',
         borderRadius:20,
         height: 52,
         width: '80%',

@@ -216,16 +216,6 @@ export default class FoodLogScreen extends React.Component {
         await this.fetchList();    
     }
 
-    getRecipe = async(item) => {
-        await this.setState({
-            recipeName: item.recipeName,
-            recipeCalories: item.recipeCalories,
-            recipeProtein: item.recipeProtein,
-            recipeWeight: item.recipeWeight
-        })
-        console.log(item.recipeName)
-    }
-
     addRecipe = async() => {
         var userID = this.state.uid;
         var day = new Date().getDay();
@@ -322,11 +312,11 @@ export default class FoodLogScreen extends React.Component {
                                 <View style={{flex:1,justifyContent:'flex-end', width:'100%', alignSelf:'center'}}>
                                 <View style={{flexDirection:'row'}}>
                                     <TouchableOpacity style={styles.button1} onPress={() => (this.setModalVisible(!modalVisible))}>
-                                        <Text>Close</Text>
+                                        <Text style={{fontWeight:'bold', fontSize:20, color:'white'}}>Close</Text>
                                     </TouchableOpacity>
 
                                     <TouchableOpacity style={styles.button2} onPress={() => (this.addFood(), this.setModalVisible(!modalVisible))}>
-                                        <Text>Add</Text>
+                                        <Text style={{fontWeight:'bold', fontSize:20, color:'white'}}>Add</Text>
                                     </TouchableOpacity>
 
                                 </View>
@@ -404,11 +394,11 @@ export default class FoodLogScreen extends React.Component {
                             <View style={{flex:1,justifyContent:'flex-end', width:'100%', alignSelf:'center'}}>
                             <View style={{flexDirection:'row'}}>
                                 <TouchableOpacity style={styles.button1} onPress={() => (this.clearRecipeSelection(),this.setModalVisible2(!modalVisible2))}>
-                                    <Text>Close</Text>
+                                    <Text style={{fontWeight:'bold', fontSize:20, color:'white'}}>Close</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity style={styles.button2} onPress={() => (this.addRecipe(), this.setModalVisible2(!modalVisible2))}>
-                                    <Text>Add</Text>
+                                    <Text style={{fontWeight:'bold', fontSize:20, color:'white'}}>Add</Text>
                                 </TouchableOpacity>
 
                             </View>
