@@ -210,6 +210,25 @@ export default class RecipeScreen extends React.Component {
         )
     }
 
+    confirmDelete = (item) => {
+        Alert.alert(
+            "Close",
+            "Recipe will be permanently deleted. \n\nDo you wish to continue?",
+            [
+                {
+                    text: "Delete",
+                    onPress:() => this.deleteRecipe(item),
+                    style: 'cancel'
+                },
+                {},
+                {
+                    text:"Cancel",
+                    style:'cancel'
+                }
+            ]
+        )
+    }
+
 
     // UI render
     render() {
@@ -331,7 +350,7 @@ export default class RecipeScreen extends React.Component {
                                     <View style={{flexDirection:'row'}}>
                                     <Text style={{flex:.9, fontSize:22,fontWeight:'bold', textAlign:'center'}}>{this.state.recipeList[item].recipeName}</Text>
                                     <TouchableOpacity style={{flex:0.1, paddingTop:5}}
-                                        onPress={() => this.deleteRecipe(this.state.recipeList[item].recipeName)}>
+                                        onPress={() => this.confirmDelete(this.state.recipeList[item].recipeName)}>
                                             {/* this.deleteEntry(this.state.listData[item].food */}
                                         <Text style={{textAlign:'right'}}>
                                         <MaterialCommunityIcons name="delete" color={'red'} size={20} />
