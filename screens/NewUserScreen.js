@@ -91,7 +91,7 @@ export default class NewUserScreen extends React.Component {
                 <Text style={styles.header}> Age </Text>
                 <TextInput style={styles.input} placeholder="Age" onChangeText={age => this.setState({age})} value={this.state.age}></TextInput>
 
-                <Text style={styles.header}> Height </Text>
+                <Text style={styles.header}> Height (cm) </Text>
                 <TextInput style={styles.input} placeholder="Height" onChangeText={height => this.setState({height})} value={this.state.height}></TextInput>
 
                 <Text style={styles.header}>Activity Level</Text>
@@ -121,7 +121,7 @@ export default class NewUserScreen extends React.Component {
                 <Picker.Item label="Female" value="Female" />
                 </Picker>
 
-                <Text style={styles.header}> Goal Weight </Text>
+                <Text style={styles.header}> Goal Weight (kg)</Text>
                 <TextInput style={styles.input} placeholder="Goal Weight" onChangeText={goalWeight => this.setState({goalWeight})} value={this.state.goalWeight}></TextInput>
 
                 <View style={{alignItems:'center'}}>

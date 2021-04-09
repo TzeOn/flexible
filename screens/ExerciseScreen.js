@@ -402,7 +402,7 @@ export default class ExerciseScreen extends React.Component {
                 </View>
                 <View style={{flex:.05}}>
                     {this.state.currentProgramme != "" && (
-                        <Text onPress={() => this.setModalVisible3(true)} style={{fontSize:20, color:'#007AAF', textAlign:'center'}}>Programme Description</Text>
+                        <Text onPress={() => this.setModalVisible3(true)} style={{fontSize:20, color:'#007AAF', textAlign:'center'}}>Program Description</Text>
                     )}
                     
                 </View>

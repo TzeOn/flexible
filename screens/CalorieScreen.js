@@ -1,9 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, StatusBar, Dimensions, ScrollView, Modal, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, StatusBar, Dimensions, Modal, Alert } from 'react-native';
 import * as firebase from 'firebase';
-import {LinearGradient} from 'expo-linear-gradient';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
-import {withNavigation} from 'react-navigation';
 
 const cardHeight = Dimensions.get('window').height * 0.10;
 const cardWidth = Dimensions.get('window').width * 0.95;
@@ -91,7 +89,6 @@ export default class CalorieScreen extends React.Component {
                 day.forEach((entry) => {
                     if(entry.key == 'change'){
                         this.setState({change:entry.val()})
-                        console.log(this.state.change)
                     }
                     entry.forEach((item) => {
                         if(item.key == 'calories'){
@@ -385,7 +382,7 @@ export default class CalorieScreen extends React.Component {
 
 
                     <View style={styles.card}>
-                        <Text style={styles.header}>Tracking</Text>
+                        <Text style={styles.header}>Calories</Text>
                     </View>
                     <View style={styles.cardContainer}>
                         <Text style={{fontSize:22, paddingBottom:15, textAlign:'center', fontWeight:'bold'}}>{this.state.date}</Text>
@@ -393,7 +390,7 @@ export default class CalorieScreen extends React.Component {
 
                             <View style={{flexDirection:'column', flex:0.25,}}>
                                 <Text style={{textAlign:'center', fontSize:20,}}>Goal</Text>
-                                <Text style={{textAlign:'center', fontSize:25, color:'#34C759', fontWeight:'bold'}}>{this.state.dailyGoal}</Text>
+                                <Text style={{textAlign:'center', fontSize:25, color:'#34C759', fontWeight:'bold'}}>{Math.round(this.state.dailyGoal)}</Text>
 
                                 <Text></Text>
                                 <Text></Text>
@@ -411,10 +408,10 @@ export default class CalorieScreen extends React.Component {
                         fill={this.state.fill}
                         rotation={360}
                         tintColor="#007AFF"
-                        backgroundColor="gray">
+                        backgroundColor="white">
                             {
                                 (fill) => (
-                                    <Text style={{textAlign:'center',color:'black', fontSize:40, fontWeight:'bold'}}> {calories}</Text>
+                                    <Text style={{textAlign:'center',color:'black', fontSize:40, fontWeight:'bold'}}> {calories} <Text style={{fontSize:10}}>kcal</Text></Text>
                                 )
                             }
                         </AnimatedCircularProgress>
