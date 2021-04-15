@@ -40,6 +40,7 @@ export default class FoodLogScreen extends React.Component {
         recipeCalories:0,
         recipeProtein:0,
         recipeWeight:0,
+        recipeNewWeight:0,
     }
 
     async componentDidMount() {
@@ -80,7 +81,7 @@ export default class FoodLogScreen extends React.Component {
         });  
 
         // fetch recipes list
-        firebase.database().ref('Users/' + uid + '/recipes/').once('value', (snapshot) => {
+        firebase.database().ref('Users/' + uid + '/recipes/').on('value', (snapshot) => {
             this.setState({recipeList:snapshot.val()})
         })
     }
@@ -120,6 +121,7 @@ export default class FoodLogScreen extends React.Component {
 
     setModalVisible = (visible) => {
         this.setState({modalVisible: visible});
+        console.log("opening")
     }
 
     setModalVisible2 = (visible) => {
@@ -216,9 +218,37 @@ export default class FoodLogScreen extends React.Component {
         await this.fetchList();    
     }
 
+    getRecipe = async(item) => {
+        Object.entries(item).map(([key, value]) => {
+            if(key == 'recipeCalories'){
+                this.setState({recipeCalories: value})
+            }
+            if(key == 'recipeName'){
+                this.setState({recipeName: value})
+            }
+            if(key == 'recipeProtein'){
+                this.setState({recipeProtein: value})
+            }
+            if(key == 'recipeWeight'){
+                this.setState({recipeWeight: value})
+            }
+        })
+    }
+
     addRecipe = async() => {
         var userID = this.state.uid;
         var day = new Date().getDay();
+
+        if(this.state.recipeNewWeight != this.state.recipeWeight){
+            var diff = await this.state.recipeNewWeight/this.state.recipeWeight;
+            var newCalories = await Math.round(this.state.recipeCalories * diff, 10);
+            var newProtein = await Math.round(this.state.recipeProtein * diff,10);
+            
+            this.setState({recipeWeight: this.state.recipeNewWeight});
+            this.setState({recipeCalories: newCalories});
+            this.setState({recipeProtein: newProtein});
+
+        }
 
         const updates = {
             'food':this.state.recipeName,
@@ -386,7 +416,7 @@ export default class FoodLogScreen extends React.Component {
                                 <View style={{borderWidth:1, borderRadius:10, flex:1}}>                                        
                                     <TextInput style={{fontSize:20, width:'100%', textAlign:'center', }} 
                                     placeholder="Default serving/x grams" 
-                                    onChangeText={recipeWeight => this.setState({recipeWeight})} value={this.state.recipeWeight}></TextInput>                                        
+                                    onChangeText={recipeNewWeight => this.setState({recipeNewWeight})} value={this.state.recipeNewWeight}></TextInput>                                        
                                 </View>
                                                               
                             </View>
@@ -456,8 +486,8 @@ export default class FoodLogScreen extends React.Component {
                                     </View>
                                     <View style={{flex:1, flexDirection:'row'}}>
                                         <View style={{flex:0.33}}>
-                                         <Text style={{fontSize:20, flex:1, textAlign:'center'}}>Weight:</Text>
-                                         <Text style={{fontSize:20, flex:1, textAlign:'center'}}>{this.state.listData[item].amount}g</Text>   
+                                         <Text style={{fontSize:20, flex:1, textAlign:'center'}}>Weight(g):</Text>
+                                         <Text style={{fontSize:20, flex:1, textAlign:'center'}}>{this.state.listData[item].amount}</Text>   
                                         </View>
                                         <View style={{flex:0.33}}>
                                          <Text style={{fontSize:20, flex:1, textAlign:'center'}}>Protein:</Text>
