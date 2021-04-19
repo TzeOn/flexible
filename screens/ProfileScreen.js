@@ -121,6 +121,23 @@ export default class ProfileScreen extends React.Component {
         return tdee;
     }
 
+    confirmDelete = () => {
+        Alert.alert(
+            'Delete Account',
+            'Are you sure you wish to permanently delete your account?',
+            [
+                {
+                    text:'Cancel',
+                    style:'cancel'
+                },
+                {
+                    text:'Delete',
+                    onPress: () => {firebase.auth().delete()}
+                }
+            ]
+        )
+    }
+
     // UI render
     render() {
         const { modalVisible } = this.state;
@@ -243,12 +260,18 @@ export default class ProfileScreen extends React.Component {
                         <Text style={styles.row2}>{this.state.activityLevel}</Text>
                     </View>
                     </View>
+                    <View style={{paddingTop:10}}>
+                        <TouchableOpacity style={styles.button2} onPress={() => this.confirmDelete()}>
+                            <Text style={{color:'white', fontSize: 20, alignSelf:'center', textAlign:'center', fontWeight:'bold'}}>Delete Account</Text>
+                        </TouchableOpacity>
+                    </View>
 
-                    <View style={{paddingTop:100}}>
-                        <TouchableOpacity style={styles.button} onPress={this.confirm}>
+                    <View style={{paddingTop:50}}>
+                        <TouchableOpacity style={styles.button} onPress={() => this.confirm()}>
                             <Text style={{color:'white', fontSize: 20, alignSelf:'center', textAlign:'center', fontWeight:'bold'}}>Sign Out</Text>
                         </TouchableOpacity>
                     </View>
+
                 </View>
                 </ScrollView>
             </View>
@@ -279,6 +302,17 @@ const styles = StyleSheet.create({
         width: '80%',
         alignSelf:'center',
         marginTop:30,
+        justifyContent:'center',
+        borderColor:'grey',
+        borderWidth:1
+    },
+    button2: {
+        marginHorizontal:30,
+        backgroundColor: 'red',
+        borderRadius:20,
+        height: 32,
+        width: '50%',
+        alignSelf:'center',
         justifyContent:'center',
         borderColor:'grey',
         borderWidth:1

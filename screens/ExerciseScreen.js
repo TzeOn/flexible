@@ -30,9 +30,6 @@ export default class ExerciseScreen extends React.Component {
         currentProgramme:[],
         listVisible: false,
         selectedDescription:""
-
-
-
     }
 
     async componentDidMount() {
@@ -41,33 +38,18 @@ export default class ExerciseScreen extends React.Component {
 
         await firebase.database().ref('Users/Programs/').once('value', (snapshot) => {
             this.setState({programList: snapshot.val()})
-            //console.log(this.state.programList)
-            snapshot.forEach((program) => {
-                // Whole program object
-                program.forEach((split) => {
-                   // console.log(split.key)  // A and B, and description
-                   // Next child to access exercises for each day i.e. 1, 2, 3 + complete flag
-                   // Key = name, description, and splits
-                })
-            })
-            //console.log(this.state.programList)
-            var myjson = JSON.stringify(this.state.programList)
-            
-            //firebase.database().ref('Users/' + uid + '/programmes/').set(randoObj)
         })
-
         
-        firebase.database().ref('Users/' + uid + '/programmes/').once('value', (snapshot) => {
+        firebase.database().ref('Users/' + uid + '/programs/').once('value', (snapshot) => {
             if(snapshot != null){
                 this.setState({myPrograms: snapshot.val()})
             }
         })
-
     }
 
     refreshList = () => {
         var userID = this.state.uid
-        firebase.database().ref('Users/' + userID + '/programmes/').once('value', (snapshot) => {
+        firebase.database().ref('Users/' + userID + '/programs/').once('value', (snapshot) => {
             if(snapshot != null){
                 this.setState({myPrograms: snapshot.val()})
             }
@@ -105,27 +87,19 @@ export default class ExerciseScreen extends React.Component {
     }
 
     addProgram = async(item) => {
-        //console.log(item)
         var userID = this.state.uid
         
         await firebase.database().ref('Users/Programs/').once('value', (snapshot) => {
-            //this.setState({addedProgramme: snapshot})
             snapshot.forEach((programme) => {
-                //console.log(programme.key)
                 if(programme.key == item){
                     this.setState({addedProgramme: programme.val()})
-                    this.setState({pName: programme.key.toString()})
-                    
+                    this.setState({pName: programme.key.toString()})              
                 }
             })
         })
         var pName = this.state.pName;
-        firebase.database().ref('Users/' + userID + '/programmes/' + pName).update(this.state.addedProgramme)
+        firebase.database().ref('Users/' + userID + '/programs/' + pName).update(this.state.addedProgramme)
         this.refreshList()
-        
-        
-        
-        //firebase.database().ref('Users/' + userID + '/programs/').push().update()
     }
 
     getProgram = async(item) => {
@@ -215,7 +189,7 @@ export default class ExerciseScreen extends React.Component {
         var split = this.state.splits[this.state.index]
         var userID = this.state.uid
         var programme = this.state.selectedProgram
-        var ref = firebase.database().ref('Users/' + userID + '/programmes/' + programme + '/days/' + split)
+        var ref = firebase.database().ref('Users/' + userID + '/programs/' + programme + '/days/' + split)
         
         await ref.once('value', (snapshot) => {
             snapshot.forEach((lift)=> {
@@ -226,7 +200,7 @@ export default class ExerciseScreen extends React.Component {
                     if(item.key == 'liftWeight'){
                         console.log(item.val())
                         var increase = item.val() + 2.5
-                        firebase.database().ref('Users/' + userID + '/programmes/' + programme + '/days/' + split +'/'+ key).update({'liftWeight':increase})                      
+                        firebase.database().ref('Users/' + userID + '/programs/' + programme + '/days/' + split +'/'+ key).update({'liftWeight':increase})                      
                     }
                 })
                 }

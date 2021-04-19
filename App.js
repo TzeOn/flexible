@@ -18,7 +18,7 @@ import FoodLogScreen from './screens/FoodLogScreen.js';
 import ProfileScreen from './screens/ProfileScreen.js';
 import RecipeScreen from './screens/RecipeScreen.js';
 
-//firebase.initializeApp(firebaseConfig);
+// Initialise new or existing firebase App
 if(!firebase.apps.length){
   firebase.initializeApp(firebaseConfig);
 }else {
@@ -116,10 +116,7 @@ export default createAppContainer(
       Tabs: TabNavigator,
     },
     {
-      initialRouteName: 'Home',
-      
-    },
-    
-    
+      initialRouteName: 'Home',      
+    },   
   )
 );

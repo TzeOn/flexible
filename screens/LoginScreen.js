@@ -13,10 +13,8 @@ export default class LoginScreen extends React.Component {
         errorMessage: null
     }
 
-    doLogin = () => {
-        
+    doLogin = () => {       
         const { email, password } = this.state;
-
         firebase
         .auth()
         .signInWithEmailAndPassword(email, password)

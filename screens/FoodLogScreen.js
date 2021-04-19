@@ -239,7 +239,7 @@ export default class FoodLogScreen extends React.Component {
         var userID = this.state.uid;
         var day = new Date().getDay();
 
-        if(this.state.recipeNewWeight != this.state.recipeWeight){
+        if(this.state.recipeNewWeight != this.state.recipeWeight && this.state.recipeNewWeight != 0){
             var diff = await this.state.recipeNewWeight/this.state.recipeWeight;
             var newCalories = await Math.round(this.state.recipeCalories * diff, 10);
             var newProtein = await Math.round(this.state.recipeProtein * diff,10);
@@ -415,10 +415,13 @@ export default class FoodLogScreen extends React.Component {
                                 <Text style={{fontSize:20, textAlign:'left', flex:.4}}>Amount: </Text>
                                 <View style={{borderWidth:1, borderRadius:10, flex:1}}>                                        
                                     <TextInput style={{fontSize:20, width:'100%', textAlign:'center', }} 
-                                    placeholder="Default serving/x grams" 
+                                    placeholder="Specific weight (g)" 
                                     onChangeText={recipeNewWeight => this.setState({recipeNewWeight})} value={this.state.recipeNewWeight}></TextInput>                                        
                                 </View>
                                                               
+                            </View>
+                            <View>
+                                <Text style={{fontSize:8, marginTop:5}}>*if no amount is entered then default recipe serving is added*</Text>
                             </View>
 
                             <View style={{flex:1,justifyContent:'flex-end', width:'100%', alignSelf:'center'}}>

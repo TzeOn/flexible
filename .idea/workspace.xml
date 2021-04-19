@@ -2,7 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fbcf3fcb-68ee-4b86-a36b-ba6234caa29a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/CalorieScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/CalorieScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/ExerciseScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/ExerciseScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/FoodLogScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/FoodLogScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/LoginScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/LoginScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/ProfileScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/ProfileScreen.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,6 +26,9 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="project.structure.last.edited" value="Project" />
+    <property name="project.structure.proportion" value="0.0" />
+    <property name="project.structure.side.proportion" value="0.2" />
     <property name="settings.editor.selected.configurable" value="AndroidSdkUpdater" />
   </component>
   <component name="SvnConfiguration">
@@ -37,17 +45,25 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
+    <state x="335" y="35" key="#Project_Structure" timestamp="1618852080453">
+      <screen x="0" y="0" width="1707" height="920" />
+    </state>
+    <state x="335" y="35" key="#Project_Structure/0.0.1707.920@0.0.1707.920" timestamp="1618852080453" />
     <state x="535" y="197" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1617028904717">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state x="535" y="197" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1707.920@0.0.1707.920" timestamp="1617028904717" />
-    <state x="253" y="120" width="1200" height="680" key="AVDManager" timestamp="1616029947709">
+    <state x="253" y="120" width="1200" height="680" key="AVDManager" timestamp="1618852147339">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
-    <state x="253" y="120" width="1200" height="680" key="AVDManager/0.0.1707.920@0.0.1707.920" timestamp="1616029947709" />
-    <state x="363" y="106" key="SettingsEditor" timestamp="1616029590742">
+    <state x="253" y="120" width="1200" height="680" key="AVDManager/0.0.1707.920@0.0.1707.920" timestamp="1618852147339" />
+    <state x="635" y="216" key="FileChooserDialogImpl" timestamp="1618851453415">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
-    <state x="363" y="106" key="SettingsEditor/0.0.1707.920@0.0.1707.920" timestamp="1616029590742" />
+    <state x="635" y="216" key="FileChooserDialogImpl/0.0.1707.920@0.0.1707.920" timestamp="1618851453414" />
+    <state x="240" y="97" key="SettingsEditor" timestamp="1618852047681">
+      <screen x="0" y="0" width="1707" height="920" />
+    </state>
+    <state x="240" y="97" key="SettingsEditor/0.0.1707.920@0.0.1707.920" timestamp="1618852047681" />
   </component>
 </project>

@@ -81,13 +81,13 @@ export default class CalorieScreen extends React.Component {
         var weeklyCaloriesRef = firebase.database().ref('Users/' + uid + '/week/');
         await weeklyCaloriesRef.on('value', (snapshot) => {
             var weekTotal=0;
-
+    
             snapshot.forEach((day) => {
                 if(day.key == 'reset'){
                     this.setState({reset:day.val()})
                 }
                 day.forEach((entry) => {
-                    if(entry.key == 'change'){
+                    if(entry.key == 'change' && day.key == newDay){
                         this.setState({change:entry.val()})
                     }
                     entry.forEach((item) => {
