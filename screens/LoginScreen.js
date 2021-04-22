@@ -13,6 +13,7 @@ export default class LoginScreen extends React.Component {
         errorMessage: null
     }
 
+    // Log the user in with email and password
     doLogin = () => {       
         const { email, password } = this.state;
         firebase
@@ -21,10 +22,12 @@ export default class LoginScreen extends React.Component {
         .catch(error => this.setState({ errorMessage: error.message }));
     }
 
+    // Navigate user to reset password screen
     resetPassword = () => {
         this.props.navigation.navigate('Reset')
     }
     
+    // Navigate user to register screen
     register = () => {
         this.props.navigation.navigate("Register")
     }

@@ -35,6 +35,7 @@ export default class RecipeScreen extends React.Component {
         
     }
 
+    // Fetch the list of recipes 
     componentDidMount() {
         const { email, displayName, uid } = firebase.auth().currentUser;
         this.setState({ email, displayName, uid});
@@ -44,10 +45,12 @@ export default class RecipeScreen extends React.Component {
         })
     }
 
+    // Toggle modal visibility
     setModalVisible = (visible) => {
         this.setState({modalVisible: visible});
     }
 
+    // Function to re-fetch recipes from firebase and update the state values
     fetchRecipes = () => {
         var userID = this.state.uid;
 
@@ -56,6 +59,7 @@ export default class RecipeScreen extends React.Component {
         })
     }
 
+    // API call to search for food through Nutritionix, by default will fetch a single serving
     findFood = async() => {
         const requestOptions = {
             method: 'POST',
@@ -84,6 +88,7 @@ export default class RecipeScreen extends React.Component {
             })   
     }
 
+    // Update the list of ingredients
     updateList = () => {
         let actualCalories = 0;
         let actualProtein = 0;
@@ -122,11 +127,13 @@ export default class RecipeScreen extends React.Component {
         })
     }
 
+    // Search for food then update the ingredients list
     addIngredient = async() => {
         await this.findFood();
         this.updateList();
     }
 
+    // Add the recipe to the recipe book and refresh the screen
     addRecipe = async() => {
         var promises = []; //Store all promises 
         var recipeName = this.state.recipeName;
@@ -159,6 +166,7 @@ export default class RecipeScreen extends React.Component {
         this.setModalVisible(!this.state.modalVisible);
     }
 
+    // Delete recipe from the recipe book and refresh the screen
     deleteRecipe = async (item) => {
         var userID = this.state.uid;
         var ref = firebase.database().ref('Users/' + userID + '/recipes/');
@@ -175,6 +183,7 @@ export default class RecipeScreen extends React.Component {
         await this.fetchRecipes();    
     }
 
+    // Get recipe data from the passed in item parameter
     getRecipe = async(item) => {
         await this.setState({
             recipeName: item.recipeName,
@@ -185,6 +194,7 @@ export default class RecipeScreen extends React.Component {
         console.log(item.recipeName)
     }
 
+    // Clear the ingredients of previous recipe creation
     clearIngredients = () => {
         this.setState({
             foodList:[],
@@ -192,6 +202,7 @@ export default class RecipeScreen extends React.Component {
         })
     }
 
+    // Alert popup to confirm cancelling recipe add
     confirm = () => {
         Alert.alert(
             "Close",
@@ -210,6 +221,7 @@ export default class RecipeScreen extends React.Component {
         )
     }
 
+    // Alert popup to confirm deleting a recipe
     confirmDelete = (item) => {
         Alert.alert(
             "Close",

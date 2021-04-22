@@ -80,6 +80,7 @@ export default class ProfileScreen extends React.Component {
         )
     }
     
+    // Update the user profile with updated data, recalculate TDEE and goals
     update = () => {
         if(this.state.age == '' || this.state.weight == '' || this.state.height == '' || this.state.activityLevel == '' || this.state.gender == ''){
             alert('Please complete the form');
@@ -105,6 +106,7 @@ export default class ProfileScreen extends React.Component {
         this.setModalVisible(!this.state.modalVisible)
     }
     
+    // Function to calculate TDEE of the user
     calculateTDEE = () => {
         var w = this.state.weight;
         var h = this.state.height;
@@ -121,6 +123,7 @@ export default class ProfileScreen extends React.Component {
         return tdee;
     }
 
+    // Alert popup to confirm that the user wishes to permanently delete their account from firebase
     confirmDelete = () => {
         Alert.alert(
             'Delete Account',

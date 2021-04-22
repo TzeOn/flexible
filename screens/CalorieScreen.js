@@ -35,16 +35,17 @@ export default class CalorieScreen extends React.Component {
 
     }
 
+    // Code that is run when the screen is rendered. This is where data is initially fetched from the database
+    // When state variables are changed, the screen will re-render causing this to run again 
     async componentDidMount() {
         const { email, displayName, uid } = firebase.auth().currentUser;
         this.setState({ email, displayName, uid});
         firebase.database().ref('Users/' + uid).update({'name' : displayName})
         var newDay = new Date().getDay();
+
         // Listens to the database and retrieves required values, then appends these values to the corresponding state
         // Data is returned as a snapshot, all child nodes of 'Users/uid' are returned
-        // child nodes are filtered using if statements where the states are set using the value of each child snapshot
-        
-
+        // child nodes are filtered using if statements where the states are set using the value of each child snapshot   
         var ref = firebase.database().ref('Users/' + uid);
         await ref.once('value', (snapshot) => {
         snapshot.forEach((childSnapshot) => {
@@ -78,19 +79,24 @@ export default class CalorieScreen extends React.Component {
         })
         }); 
         
+        // Function to fetch calories for each day of the week and add them to the weekly total
+        // Set the weekly total state variable
         var weeklyCaloriesRef = firebase.database().ref('Users/' + uid + '/week/');
         await weeklyCaloriesRef.on('value', (snapshot) => {
             var weekTotal=0;
     
             snapshot.forEach((day) => {
+                // Sets the reset state variable
                 if(day.key == 'reset'){
                     this.setState({reset:day.val()})
                 }
                 day.forEach((entry) => {
+                    // Sets the change state variable
                     if(entry.key == 'change' && day.key == newDay){
                         this.setState({change:entry.val()})
                     }
                     entry.forEach((item) => {
+                        // Fetch calories for this day, add to weekly total
                         if(item.key == 'calories'){
                             weekTotal += item.val()
                         }
@@ -100,6 +106,7 @@ export default class CalorieScreen extends React.Component {
             this.setState({weeklyCalories: weekTotal})           
         })
 
+        // Fetch the current calories and protein for the day
         var dailyRef = firebase.database().ref('Users/' + uid + '/week/' + newDay);
         await dailyRef.once('value', (snapshot) => {
             var dailyTotal=0;
@@ -119,6 +126,8 @@ export default class CalorieScreen extends React.Component {
             this.setState({protein: dailyProtein})
             
         })
+
+        // Get the percentage of calories consumed today to fill the animated progress circle
         this.getFill()
 
         // Reset the food log entries at the start of the week
@@ -138,6 +147,7 @@ export default class CalorieScreen extends React.Component {
             console.log("clear entries")
         }
 
+        // Start the listener function
         this.listener();
 
     }
@@ -150,6 +160,7 @@ export default class CalorieScreen extends React.Component {
             var userID = this.state.uid;
             var day = new Date().getDay();
 
+            // Listens for changes to the daily or weekly goal and changes the state variables to re-render the screen
             await firebase.database().ref('Users/' + userID).once('value', (snapshot) => {
                 snapshot.forEach((child) => {
                     if(child.key == 'dailyGoal'){
@@ -161,6 +172,7 @@ export default class CalorieScreen extends React.Component {
                 })
             })
 
+            // Listens for changes to the daily calories or protein and changes the state variables to re-render the screen
             await firebase.database().ref('Users/' + userID + '/week/' + day).once('value', (snapshot)=>{
                 snapshot.forEach((entry)=>{
                     entry.forEach((item)=>{
@@ -176,6 +188,8 @@ export default class CalorieScreen extends React.Component {
                 this.setState({calories: total})
                 this.setState({protein:p})
 
+                // Check for when calories have been exceeded and user is prompted to alter their calories for the week
+                // Does not run more than once per day
                 if(this.state.calories > this.state.dailyGoal && !this.state.change){
                     Alert.alert(
                         "Oops...",
@@ -198,6 +212,7 @@ export default class CalorieScreen extends React.Component {
         })
     }
 
+    // Set the change boolean variable so the function will not be called again from the check above
     noChange = () => {
         var userID = this.state.uid;
         var day = new Date().getDay();
@@ -206,6 +221,9 @@ export default class CalorieScreen extends React.Component {
         firebase.database().ref('Users/' + userID + '/week/' + day).update({'change':this.state.change})
     }
 
+    // Alter the daily calories for the remainder of the week to maintain the same weekly goal
+    // n days left of the week calculated, excess calories is divided by n, this is deducted from every days calories
+    // Set the change flag to true to prevent prompt
     alterWeek = () => {
         var excess = (this.state.dailyGoal - this.state.calories) * -1;
         var day = new Date().getDay();
@@ -225,6 +243,7 @@ export default class CalorieScreen extends React.Component {
         this.setState({ modalVisible: visible });
     }
 
+    // Gets the percentage of calories consumed vs the daily goal, fills up the animated progress bar
     getFill = () => {
         var cal = parseInt(this.state.calories, 10);
         var max = this.state.dailyGoal;
@@ -238,6 +257,7 @@ export default class CalorieScreen extends React.Component {
         
     };
 
+    // Get the calories remaining today 
     getRemainingDay = () => {
         var max = parseInt(this.state.dailyGoal, 10);
         var cal = parseInt(this.state.calories, 10);
@@ -246,6 +266,7 @@ export default class CalorieScreen extends React.Component {
         return Math.round(res);
     };
 
+    // Get the calories remaining for the week
     getRemainingWeekly = () => {
         var max = this.state.weeklyGoal;
         var cal = parseInt(this.state.weeklyCalories, 10);
@@ -254,10 +275,12 @@ export default class CalorieScreen extends React.Component {
         return Math.round(res);
     };
 
+    // Get the weekly calorie goal
     getWeeklyGoal = () => {
         return this.state.dailyGoal * 7;
     }
 
+    // Get the users protein goal from their body weight
     getProtein = () => {
         var w = parseInt(this.state.weight, 10);
         var p = w * 1.6;
@@ -265,6 +288,7 @@ export default class CalorieScreen extends React.Component {
         return Math.round(p);
     };
 
+    // Calculate how much weight the user will lose with the current deficit
     getDeficitDifference = () => {
         var totalTDEE = parseFloat(this.state.TDEE, 10) * 7;
         var totalWeek = parseFloat(this.state.weeklyGoal, 10);
@@ -277,6 +301,7 @@ export default class CalorieScreen extends React.Component {
         return kgDifference;
     }
 
+    // Calculate n of weeks til goal is reached
     getLossEstimate = () => {
         var loss = 0;
         var weeks = 0;
@@ -290,6 +315,7 @@ export default class CalorieScreen extends React.Component {
         return weeks;
     }
 
+    // Calculate the users TDEE from personal information
     calculateTDEE = () => {
         var w = this.state.weight;
         var h = this.state.height;
@@ -305,6 +331,7 @@ export default class CalorieScreen extends React.Component {
         return bmr * aL;
     }
 
+    // Update the users information and recalculate their TDEE and goals with updated data
     update = () => {
         if(this.state.weight == '' || this.state.goalWeight == ''){
             alert('Cannot be null');
@@ -331,6 +358,7 @@ export default class CalorieScreen extends React.Component {
         })
     }
 
+    // Get the date in a specific format dd/mm/yy
     getDate = () => {
         let [month, date, year] = new Date().toLocaleDateString("en-US").split("/");
         let newDate = date + month + year
@@ -340,7 +368,6 @@ export default class CalorieScreen extends React.Component {
 
 
     render() {
-        // this.getFill()
         const { calories } = this.state;
         const { modalVisible } = this.state;
         return (        

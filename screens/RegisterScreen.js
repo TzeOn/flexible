@@ -13,7 +13,8 @@ export default class RegisterScreen extends React.Component {
         password: ""
     };
 
-    // Register the User with their email and password using the built-in firebase function
+    // Register the User with their email and password using the built-in firebase function and update their profile
+    // with the user's name as their display name
     registerUser = () => {
         firebase
         .auth().createUserWithEmailAndPassword(this.state.email, this.state.password)

@@ -14,6 +14,7 @@ export default class ResetPassword extends React.Component {
         
     }
 
+    // firebase function to send a password reset email to the input email
     resetPassword = () => {
         firebase.auth().sendPasswordResetEmail(this.state.email)
         .then(() => {

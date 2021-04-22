@@ -21,6 +21,7 @@ export default class NewUserScreen extends React.Component {
         goalWeight:0
     }
 
+    // Fetches the users profile details
     componentDidMount() {
         const { email, displayName, uid } = firebase.auth().currentUser;
         this.setState({ email, displayName, uid});
@@ -54,6 +55,7 @@ export default class NewUserScreen extends React.Component {
         this.props.navigation.navigate('Tabs');      
     }
 
+    // Function to calculate the users TDEE
     calculateTDEE = () => {
         var w = this.state.weight;
         var h = this.state.height;
@@ -70,6 +72,7 @@ export default class NewUserScreen extends React.Component {
         return tdee;
     }
 
+    // Sign out the user with the firebase.auth function 
     signOut = () => {
         firebase.auth().signOut();
     };

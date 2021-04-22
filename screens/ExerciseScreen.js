@@ -32,6 +32,7 @@ export default class ExerciseScreen extends React.Component {
         selectedDescription:""
     }
 
+    // Fetch the programs and user's programs
     async componentDidMount() {
         const { email, displayName, uid } = firebase.auth().currentUser;
         this.setState({ email, displayName, uid});
@@ -47,6 +48,7 @@ export default class ExerciseScreen extends React.Component {
         })
     }
 
+    // Refresh the myPrograms list
     refreshList = () => {
         var userID = this.state.uid
         firebase.database().ref('Users/' + userID + '/programs/').once('value', (snapshot) => {
@@ -56,18 +58,22 @@ export default class ExerciseScreen extends React.Component {
         })
     }
 
+    // Toggle visibility for modal 1
     setModalVisible = (visible) => {
         this.setState({modalVisible: visible});
     }
 
+    // Toggle visibility for modal 2
     setModalVisible2 = (visible) => {
         this.setState({modalVisible2: visible})
     }
 
+    // Toggle visibility for modal 3
     setModalVisible3 = (visible) => {
         this.setState({modalVisible3: visible})
     }
 
+    // Alert prompt to confirm joining a program
     confirmJoin = (item) => {
         Alert.alert(
             "Confirm",
@@ -86,6 +92,7 @@ export default class ExerciseScreen extends React.Component {
         this.setModalVisible(!this.state.modalVisible);
     }
 
+    // Function to copy the program object over to the user's programs node, then refresh the user's list
     addProgram = async(item) => {
         var userID = this.state.uid
         
@@ -102,6 +109,7 @@ export default class ExerciseScreen extends React.Component {
         this.refreshList()
     }
 
+    // Fetch the nested data from the selected program object
     getProgram = async(item) => {
         // get program from firebase with the item name 
         this.setState({selectedProgram: item.name})
@@ -124,6 +132,7 @@ export default class ExerciseScreen extends React.Component {
         this.setModalVisible2(!this.state.modalVisible2)
     }
 
+    // Get the next session
     getNext = async() => {
         var len = await this.state.splits.length - 1;
         var i = await this.state.index + 1;
@@ -136,6 +145,7 @@ export default class ExerciseScreen extends React.Component {
         this.getCurrent()
     }
 
+    // Get the previous session
     getPrev = async() => {
         var len = this.state.splits.length - 1;
         var i = this.state.index - 1;
@@ -148,6 +158,7 @@ export default class ExerciseScreen extends React.Component {
         this.getCurrent()
     }
 
+    // Extract the nested data from the current selected program object 
     getCurrent = () => {
         Object.entries(this.state.myPrograms).map(([key, value]) => {
             Object.entries(value).map(([key, value2])=> {                
@@ -160,15 +171,7 @@ export default class ExerciseScreen extends React.Component {
         })
     }
 
-    getDescription = (item) => {
-        console.log(item.exercise)
-        
-    }
-
-    listShowing = () => {
-        this.setState({listVisible:true})
-    }
-
+    // Alert to confirm increasing the exercise weight
     confirmIncrease = () => {
         Alert.alert(
             "Confirm",
@@ -185,6 +188,8 @@ export default class ExerciseScreen extends React.Component {
             ]
         )
     }
+
+    // Increase the weight once confirmed by 2.5kg for each exercise, refresh the list to update values on screen
     increaseLoad = async() => {
         var split = this.state.splits[this.state.index]
         var userID = this.state.uid

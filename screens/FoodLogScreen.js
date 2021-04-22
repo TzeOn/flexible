@@ -11,8 +11,6 @@ const modalHeight = Dimensions.get('window').height * 0.85;
 const modalCard = Dimensions.get('window').width * 0.85;
 
 export default class FoodLogScreen extends React.Component {
-
-
     state = {
         email: "",
         displayName: "",
@@ -43,6 +41,7 @@ export default class FoodLogScreen extends React.Component {
         recipeNewWeight:0,
     }
 
+    // Fetch the calories, food and recipes data
     async componentDidMount() {
         const { email, displayName, uid } = firebase.auth().currentUser;
         this.setState({ email, displayName, uid});
@@ -52,6 +51,7 @@ export default class FoodLogScreen extends React.Component {
         var newDay = newDate.getDay();
         this.setState({currentDay: newDay}); 
 
+        // Fetches the calories from firebase, updates state variable
         var ref = firebase.database().ref('Users/' + uid + '/week/' + newDay);
         await ref.once('value', (snapshot) => {
             var total=0;
@@ -86,6 +86,7 @@ export default class FoodLogScreen extends React.Component {
         })
     }
 
+    // Function to re-fetch data
     fetchList = async () => {
         var userID = this.state.uid;
         var day = this.state.currentDay;
@@ -119,22 +120,25 @@ export default class FoodLogScreen extends React.Component {
         })
     }
 
+    // Toggle visibility for modal 1 
     setModalVisible = (visible) => {
         this.setState({modalVisible: visible});
         console.log("opening")
     }
 
+    // Toggle visibility for modal 2
     setModalVisible2 = (visible) => {
         this.setState({modalVisible2: visible});
     }
 
+    // Get specific format of date dd/mm/yy
     getDate = () => {
         let [month, date, year] = new Date().toLocaleDateString("en-US").split("/");
         let newDate = date + month + year
         return newDate
     }
 
-    // Search nutritionix database for desired food item
+    // Search nutritionix database for desired food item, single serving is always fetched initially
     findFood = async () => {
         const requestOptions = {
             method: 'POST',
@@ -164,6 +168,8 @@ export default class FoodLogScreen extends React.Component {
   
     }
 
+    // Update the food log with new entry, checks if the weight input was left at 0
+    // if left at 0 then fetch single serving, else, fetch nutritional values for input weight
     update = () => {
         let userID = this.state.uid;
         let currentDate = this.state.currentDay;
@@ -193,14 +199,14 @@ export default class FoodLogScreen extends React.Component {
         })
     }
 
+    // Function to get the food, update the state variables and database, then re-render to update
     addFood = async () => {
         await this.findFood();
         this.update();
-        await this.fetchList();
-
-    
+        await this.fetchList();  
     };
 
+    // Delete food item and update screen
     deleteEntry = async (item) => {
         var day = this.state.currentDay;
         var userID = this.state.uid;
@@ -218,6 +224,7 @@ export default class FoodLogScreen extends React.Component {
         await this.fetchList();    
     }
 
+    // Get selected recipe values from the item parameter passed in 
     getRecipe = async(item) => {
         Object.entries(item).map(([key, value]) => {
             if(key == 'recipeCalories'){
@@ -235,6 +242,7 @@ export default class FoodLogScreen extends React.Component {
         })
     }
 
+    // Add the recipe details to the food log
     addRecipe = async() => {
         var userID = this.state.uid;
         var day = new Date().getDay();
@@ -262,6 +270,7 @@ export default class FoodLogScreen extends React.Component {
         this.clearRecipeSelection()
     }
 
+    // Clear the text input from previously selected recipes
     clearRecipeSelection = () => {
         this.setState({
             recipeName: "",
@@ -271,6 +280,7 @@ export default class FoodLogScreen extends React.Component {
         })
     }
 
+    // Alert popup for user to add via search or database, or cancel
     addAlert = () => {
         Alert.alert(
             "Select an option",

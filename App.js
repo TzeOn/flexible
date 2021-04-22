@@ -26,7 +26,8 @@ if(!firebase.apps.length){
 }
 var database = firebase.database();
 
-
+// The main navigator of the application when the user is logged in
+// Tab style navigator where the calories screen is the default home page
 const TabNavigator = createBottomTabNavigator({
   Calories: {
     screen: CalorieScreen,
@@ -79,6 +80,8 @@ const TabNavigator = createBottomTabNavigator({
   }
 )
 
+// Default app stack when the user is not logged in, contains the login, register and
+// password reset screens, default screen is login
 const AppNavigator = createStackNavigator(
   {
     Login: LoginScreen,
@@ -93,6 +96,8 @@ const AppNavigator = createStackNavigator(
   },
 );
 
+// Navigator to check for authentication, checks if the user is a new user that has not completed
+// the full register process. Directs them to either the main tab navigator or newUser form screen
 const AuthNavigator = createStackNavigator(
   {
     Dashboard: DashboardScreen,
@@ -107,6 +112,10 @@ const AuthNavigator = createStackNavigator(
   }
 )
 
+// The overall app container containing all of the separate navigators and screens
+// Default home page is the home screen where user authentication takes place
+// if the user is logged in they will go to tabs, else
+//  they are directed to the default app stack
 export default createAppContainer(
   createSwitchNavigator(
     {
